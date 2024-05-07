@@ -21,79 +21,140 @@ import org.springframework.messaging.core.MessageSendingOperations;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import javax.servlet.http.Cookie;
 
 @Controller
 public class FieldController {
+    private static final int columns = 10;
+    private static final int countPlayers = 4;
+    private static Fild fild = new Fild(columns);
+    private static String[] result = fild.getMap();
+    private static Map<String,User> userTokens = new HashMap<>();
+    private User user = new User(columns);
     private final MessageSendingOperations<String> messageSendingOperations;
+    private static int reboot = 0;
 
     public FieldController(MessageSendingOperations<String> messageSendingOperations) {
         this.messageSendingOperations = messageSendingOperations;
     }
 
-
-//    private List<WebSocketSession> sessions = new ArrayList<>();
-
-    private static final String[] result = {
-            "01", "00", "01", "00",
-            "10", "00", "11", "00",
-            "01", "11", "00", "01",
-            "00", "00", "00", "00"
-    };
-
-    private String[][] UserInMap;
-
-    private static final int columns = 4;
-
-    private static final User user = new User();
-
     @RequestMapping("/field")
-    public String field(Model model) {
-        model.addAttribute("result", result);
-        model.addAttribute("columns", columns);
+    public String field(HttpServletRequest request, Model model) {
 
-        model.addAttribute("name", "macygabr");
-        model.addAttribute("x", user.getX());
-        model.addAttribute("y", user.getY());
+        Cookie cookie = CheckCookies(request);
+//        System.out.println(cookie.getName() + " " + cookie.getValue());
+        String UsersXCoord = "";
+        String UsersYCoord = "";
+        String UsersPng = "";
+
+        for(String str : userTokens.keySet()) {
+            UsersXCoord += userTokens.get(str).getX() + " ";
+            UsersYCoord += userTokens.get(str).getY() + " ";
+            UsersPng += userTokens.get(str).getPng() + " ";
+        }
+
+        model.addAttribute("UserX", UsersXCoord);
+        model.addAttribute("UserY", UsersYCoord);
+        model.addAttribute("png", UsersPng);
+        model.addAttribute("reboot", 0);
+        model.addAttribute("sizeMap", columns);
+        model.addAttribute("result", result);
+        model.addAttribute("uuid", cookie.getValue());
        return "pages/field";
     }
 
-    @MessageMapping("/hello")
-    @SendTo("/topic/greetings")
-    public String greeting(User new_user) {
-        String direction = UserMove(new_user.getX(), new_user.getY());
 
+    @SendTo("/topic/greetings")
+    @MessageMapping("/hello")
+    public String greeting(User message) {
+        System.out.print("Get: "  + message.toString());
         JSONObject response = new JSONObject();
-        response.put("coordUser", user.getX() + " " + user.getY());
-        response.put("direction", direction);
+
+        String UsersXCoord = "";
+        String UsersYCoord = "";
+
+        if(message.getReboot() == 0) UserMove(message.getX(), message.getY(), message.getCookieValue());
+        else {
+            fild = new Fild(columns);
+            result = fild.getMap();
+            userTokens.clear();
+//            user = new User(columns);
+//            userTokens.put(user.getCookieValue(), user);
+        }
+
+        user.setReboot(message.getReboot());
+
+        for(User us : userTokens.values()) {
+            UsersXCoord += String.valueOf(us.getX()) + " ";
+            UsersYCoord += String.valueOf(us.getY()) + " ";
+        }
+
+        response.put("UsersXCoord", UsersXCoord);
+        response.put("UsersYCoord", UsersYCoord);
+        response.put("userPng",user.getPng());
+        response.put("reboot", user.getReboot());
+
+        System.out.println("| Send: " + response.toString());
         return response.toString();
     }
 
-//    @RequestMapping("/user")
-//    @MessageMapping("/user")
-//    @SendTo("/topic/user")
-//    public String getUser() {
-//        return "pages/test";
-//    }
 
-    private String UserMove(int x, int y) {
-        if(Math.abs(user.getX() - x) + Math.abs(user.getY() - y) != 1) return "/img/stay.jpg";
+    private String UserMove(int x, int y, String cookieValue) {
 
-        int index = user.getX() + user.getY()*columns;
-        if(result[index].charAt(1) == '1' && user.getY() - y == -1) return "/img/stay.jpg";
-        if(result[index].charAt(0) == '1' && user.getX() - x == -1) return "/img/stay.jpg";
-        if(index>=columns && user.getY() - y == 1 && result[index-columns].charAt(1) == '1') return "/img/stay.jpg";
-        if(index>=1 && user.getX() - x == 1 && result[index-1].charAt(0) == '1') return "/img/stay.jpg";
+        int curentX = 0;
+        int curentY = 0;
 
-        int x_old = user.getX();
-        int y_old = user.getY();
-        user.setX(x);
-        user.setY(y);
+        for(User us: userTokens.values()) {
+            if(cookieValue.equals(us.getCookieValue())) {
+                curentX = us.getX();
+                curentY = us.getY();
+                int index = us.getX() + us.getY()*columns;
+                if((curentX + x < 0)
+                        || (curentX + x >= columns)
+                        || (curentY + y) < 0
+                        || (curentY+y) >= columns
+                        || (result[index].charAt(1) == '1' && y == 1)
+                        || (result[index].charAt(0) == '1' && x == 1)
+                        || (index>=columns && y == -1 && result[index-columns].charAt(1) == '1')  //верх
+                        || (index>=1 && x == -1 && result[index-1].charAt(0) == '1') //лево
+                ) return user.getPng();
 
-        if(y_old - y == 1) return "/img/up.jpg";
-        if(x_old - x == 1) return "/img/left.jpg";
-        if(y_old - y == -1) return "/img/down.jpg";
-        if(x_old - x == -1) return "/img/right.jpg";
+                us.moveX(x);
+                us.moveY(y);
+                if(x == -1) user.setPng("/img/left.jpg");
+                if(x == 1) user.setPng("/img/right.jpg");
+                if(y == -1) user.setPng("/img/up.jpg");
+                if(y == 1) user.setPng("/img/down.jpg");
+                return user.getPng();
+            }
+        }
 
-        return "/img/stay.jpg";
+        return user.getPng();
     }
+
+    private Cookie CheckCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        if(cookies != null)
+            for(Cookie cookie : cookies)
+                if(cookie.getName().equals("player"))
+                    for(String str : userTokens.keySet())
+                        if(cookie.getValue().equals(str)) return cookie;
+
+        user = new User(columns);
+        reboot = 1;
+        user.setReboot(reboot);
+        if(userTokens.size() < countPlayers)
+             userTokens.put(user.getCookieValue(), user);
+        return new Cookie(user.getCookieName(), user.getCookieValue());
+    }
+
 }
