@@ -1,0 +1,9 @@
+    .grid-container {
+            width: 40%;
+            border: 3px solid black;
+            margin: auto auto;
+        }
+
+    .grid-item {
+        background-size: cover;
+    }
