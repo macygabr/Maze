@@ -1,4 +1,5 @@
 org/example/server/Controller/FileUploadController.class
+ServerConfig.class
 org/example/server/Controller/CustomErrorController.class
 org/example/server/Controller/Otvali.class
 org/example/server/Backend/Server.class

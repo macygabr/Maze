@@ -1,21 +1,22 @@
 package org.example.server.model;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import lombok.Getter;
 import lombok.Setter;
+
 @Getter
 @Setter
+@Component
+@Scope("prototype")
 public class Cheese {
     private int x;
     private int y;
-    private int status;
-    private static String path;
+    private String path;
+
     public Cheese(int sizeMap) {
         x = (int) (Math.random() * (sizeMap));
         y = (int) (Math.random() * (sizeMap));
-        status = 0;
         path = "/img/cheese.png";
-    }
-
-    public static String getPath() {
-        return path;
     }
 }

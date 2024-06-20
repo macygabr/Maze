@@ -1,3 +1,4 @@
+mvn clean package
 sudo docker stop maze
 sudo docker rm maze
 sudo docker build -t maze .

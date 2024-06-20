@@ -1,117 +1,155 @@
 package org.example.server.Backend;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import org.example.server.model.Cheese;
+import org.example.server.model.Fild;
+import org.example.server.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.example.server.model.*;
 
 @Getter
 @Setter
+@Component
 public class Server {
     private User user;
-    private Fild fild;
     private Cheese cheese;
-    private String PathX;
-    private String PathY;
+    private Fild fild;
+    private static Map<String,User> users;
+    
+    @Value("${server.ip}")
+    private String ip;
+    @Value("${server.port}")
+    private int port;
+    @Value("${server.countPlayers}")
+    private int countPlayers;
 
-    public Server() {
-        PathX = "";
-        PathY = "";
-    }
-
-    public void FindPath(Fild fild, User user, Cheese cheese) {
+    @Autowired
+    public Server(Fild fild) {
+        this.user = null;
         this.fild = fild;
-        this.user = user;
-        this.cheese = cheese;
-        SetPathCost();
-        AlgorithmAstar();
-        FindPath();
+        this.cheese = new Cheese(fild.getSize());
+        users = new HashMap<>();
     }
 
-    private void SetPathCost(){
-        for(Cell cell : fild.getResult())
-            cell.setPathCost(0);
+    public void Reboot() {
+        users.clear();
+        fild = new Fild(fild.getSize());
+        user = new User(fild);
+        cheese = new Cheese(fild.getSize());
     }
 
-    private void AlgorithmAstar() {
-        Cell start = fild.getCell(user.getX(), user.getY());
-        Cell goal = fild.getCell(cheese.getX(), cheese.getY());
-        Set<Cell> openSet = new HashSet<>();
-        Set<Cell> closedSet = new HashSet<>();
-        HashMap<Cell, Cell> cameFrom = new HashMap<>();
+    public Map<String,User> getUsers() {
+        return users;
+    }
 
-        openSet.add(start);
+    public Boolean CheckCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
 
-        while (!openSet.isEmpty()) {
-            Cell current = null;
+        if(cookies != null)
+            for(Cookie cookie : cookies)
+                if(users.containsKey(cookie.getName()+"="+cookie.getValue()))
+                    return true;
 
-            for (Cell node : openSet)
-                if (current == null)  current = node;
-
-            if (current.equals(goal)) return;
-
-            openSet.remove(current);
-            closedSet.add(current);
-
-            for (Cell neighbor : fild.getNeighbors(current)) {
-                if (closedSet.contains(neighbor)) continue;
-                if (!openSet.contains(neighbor)) openSet.add(neighbor);
-                neighbor.setPathCost(current.getPathCost()  + 1);
-                printMap();
-            }
+        user = new User(fild);
+        if(users.size() < countPlayers) {
+            user.setAuthentication(true);
+            users.put(user.getCookieName()+"="+user.getCookieValue(), user);
         }
+        return false;
     }
 
-    private void FindPath(){
-        Cell goal = fild.getCell(cheese.getX(), cheese.getY());
-        Cell current = fild.getCell(user.getX(), user.getY());
-        while (!current.equals(goal)) {
+    // private void SetPathCost(){
+    //     for(Cell cell : fild.getResult())
+    //         cell.setPathCost(0);
+    // }
 
-            for(Cell neighbor : fild.getNeighbors(goal)) {
-                if(neighbor.getPathCost() == goal.getPathCost() - 1) {
-                    goal = neighbor;
-                    break;
-                }
-            }
+    // private void AlgorithmAstar() {
+    //     Cell start = fild.getCell(user.getX(), user.getY());
+    //     Cell goal = fild.getCell(cheese.getX(), cheese.getY());
+    //     Set<Cell> openSet = new HashSet<>();
+    //     Set<Cell> closedSet = new HashSet<>();
+    //     HashMap<Cell, Cell> cameFrom = new HashMap<>();
 
-            if(!goal.equals(current)){
-                PathX += String.valueOf(goal.getIndex()/fild.getSize()) + " ";
-                PathY += String.valueOf(goal.getIndex()%fild.getSize()) + " ";
-            }
-        }
-    }
+    //     openSet.add(start);
 
-    private void printMap(){
-        String color = "";
-        String end = "\033[0m";
-        for(int i=0; i<fild.getResult().size(); i++) {
-            if(i == user.getX()*fild.getSize() + user.getY()) color = "\033[32m";
-            else if(i == cheese.getX()*fild.getSize() + cheese.getY()) color = "\033[34m";
-            else color = "";
+    //     while (!openSet.isEmpty()) {
+    //         Cell current = null;
 
-            if(fild.getMap()[i].charAt(1) == '1') System.out.print("_" );
-            else System.out.print(" ");
+    //         for (Cell node : openSet)
+    //             if (current == null)  current = node;
 
-            System.out.print(color + fild.getResult().get(i).getPathCost() + end);
-//            System.out.print(color + fild.getResult().get(i).getIndex() + end);
+    //         if (current.equals(goal)) return;
 
-            if(fild.getMap()[i].charAt(1) == '1') System.out.print( "_");
-            else System.out.print(" ");
+    //         openSet.remove(current);
+    //         closedSet.add(current);
 
-            if(fild.getMap()[i].charAt(0) == '1') System.out.print("|");
-            else System.out.print(" ");
+    //         for (Cell neighbor : fild.getNeighbors(current)) {
+    //             if (closedSet.contains(neighbor)) continue;
+    //             if (!openSet.contains(neighbor)) openSet.add(neighbor);
+    //             neighbor.setPathCost(current.getPathCost()  + 1);
+    //             printMap();
+    //         }
+    //     }
+    // }
 
-            if((i+1)%fild.getSize() == 0) System.out.println();
-        }
-        System.out.println();
-    }
+    // public void FindPath(Fild fild, User user, Cheese cheese) {
+    //     this.fild = fild;
+    //     this.user = user;
+    //     this.cheese = cheese;
+    //     SetPathCost();
+    //     AlgorithmAstar();
+    //     FindPath();
+    // }
+
+    // private void FindPath() {
+    //     Cell goal = fild.getCell(cheese.getX(), cheese.getY());
+    //     Cell current = fild.getCell(user.getX(), user.getY());
+    //     while (!current.equals(goal)) {
+
+    //         for(Cell neighbor : fild.getNeighbors(goal)) {
+    //             if(neighbor.getPathCost() == goal.getPathCost() - 1) {
+    //                 goal = neighbor;
+    //                 break;
+    //             }
+    //         }
+
+    //         if(!goal.equals(current)){
+    //             PathX += String.valueOf(goal.getIndex()/fild.getSize()) + " ";
+    //             PathY += String.valueOf(goal.getIndex()%fild.getSize()) + " ";
+    //         }
+    //     }
+    // }
+
+    // private void printMap(){
+    //     String color;
+    //     String end = "\033[0m";
+    //     for(int i=0; i<fild.getResult().size(); i++) {
+    //         if(i == user.getX()*fild.getSize() + user.getY()) color = "\033[32m";
+    //         else if(i == cheese.getX()*fild.getSize() + cheese.getY()) color = "\033[34m";
+    //         else color = "";
+
+    //         if(fild.getMap()[i].charAt(1) == '1') System.out.print("_" );
+    //         else System.out.print(" ");
+
+    //         System.out.print(color + fild.getResult().get(i).getPathCost() + end);
+
+    //         if(fild.getMap()[i].charAt(1) == '1') System.out.print( "_");
+    //         else System.out.print(" ");
+
+    //         if(fild.getMap()[i].charAt(0) == '1') System.out.print("|");
+    //         else System.out.print(" ");
+
+    //         if((i+1)%fild.getSize() == 0) System.out.println();
+    //     }
+    //     System.out.println();
+    // }
 }

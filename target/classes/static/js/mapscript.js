@@ -1,55 +1,19 @@
+server = JSON.parse(server);
+console.log(server)
 const stompClient = new StompJs.Client({
-     brokerURL: 'ws://10.54.203.40:8080/gs-guide-websocket'
-//    brokerURL: 'ws://localhost:8080/gs-guide-websocket'
-//   brokerURL: 'ws://37.194.168.90:8080/gs-guide-websocket'
+    brokerURL: `ws://${server.ip}:${server.port}/gs-guide-websocket`
 });
 
-var userName;
-var uuid;
-var UserX =0;
-var UserY =0;
-var EnemyX;
-var EnemyY;
-var Greeting;
-var Rotate = "0";
-var PathX = "";
-var PathY = "";
-
-function connect() {
-    stompClient.activate();
-    RenderUsers();
-    RenderFild();
-    RenderCheese();
-    SetCookies();
-}
-function RenderCheese(){
-    gridItems = document.querySelectorAll('.grid-item');
-    gridSize = Math.round(Math.sqrt(gridItems.length));
-
-       for (var i = 0; i < gridItems.length; i++) {
-           y = i % gridSize;
-           x = Math.floor(i / gridSize);
-            if(x == CheeseX && y == CheeseY) {
-                var image = new Image();
-                image.src = CheesePng;
-                image.style.width =  "100%";
-                image.style.height = "100%";
-                if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(image);
-                break;
-            }
-     }
-}
-
-function disconnect() {
-    stompClient.deactivate();
-    setConnected(false);
-    console.log("Disconnected");
-}
-
-function callOnConnect() {
-    stompClient.onConnect();
-    Reboot(0,0,1);
-}
+stompClient.onConnect = (frame) => {
+    setConnected(true);
+    stompClient.subscribe('/topic/greetings', (greeting) => {
+        ListenServer(greeting);
+    });
+    stompClient.subscribe('/topic/reboot', async (greeting) => {
+        server = JSON.parse(greeting.body);
+        location.reload();
+    });
+};
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
@@ -63,116 +27,110 @@ function setConnected(connected) {
     $("#greetings").html("");
 }
 
-$(function () {
-    $("form").on('submit', (e) => e.preventDefault());
-    $( "#connect" ).click(() => connect());
-    $( "#disconnect" ).click(() => disconnect());
-    $( "#send" ).click(() => sendName());
-});
-
-function RenderFild() {
-    gridItems = document.querySelectorAll('.grid-item');
-    for (var i = 0; i < gridItems.length; i++) {
-        y = i % gridSize;
-        x = Math.floor(i / gridSize);
-        var fild = new Image();
-        fild.src = "/img/fild.png";
-        fild.style.width  = "100%";
-        fild.style.height = "100%";
-        gridItems[i].appendChild(fild);
-    }
+function SetCookies() {
+    document.cookie = encodeURIComponent(server.user.cookieName) + '=' + encodeURIComponent(server.user.cookieValue);
 }
 
-function RenderUsers() {
+function connect() {
+    stompClient.activate();
+    RenderFild();
+    SetCookies();
+}
+
+
+function RenderFild() {
+    var gridContainer = document.querySelector('.grid-container');
+    if (!gridContainer) {
+        console.error("Element with class 'grid-container' not found.");
+        return;
+    }
+    gridContainer.innerHTML = '';
+    var size = server.fild.size
+    var arr = server.fild.result
+    for (var i = 0; i < size*size; i++) {
+        var div = document.createElement('div');
+        div.className = 'grid-item';
+        div.style.width = 100.0/size + "%";
+        div.style.height = 100.0/size + "%";
+
+        var fildimg = new Image();
+        fildimg.className = 'img';
+
+        if(server.fild.result[i].right == 1 && server.fild.result[i].down == 1) fildimg.src = "/img/fild/fildBoth.png";
+        else if(server.fild.result[i].right == 1) fildimg.src = "/img/fild/fildRight.png";
+        else if(server.fild.result[i].down == 1) fildimg.src = "/img/fild/fildDown.png";
+        else fildimg.src = "/img/fild/fildEmpty.png";
+
+        div.appendChild(fildimg);
+        gridContainer.appendChild(div);
+    }
+    RenderUsers();
+    RenderCheese();
+}
+
+function RenderCheese(){
     gridItems = document.querySelectorAll('.grid-item');
-    gridSize = Math.round(Math.sqrt(gridItems.length));
-    usersX = UsersX.split(" ");
-    usersY = UsersY.split(" ");
-    console.log(usersX + " " + usersY);
-    usersPng = png.split(" ");
-    rotate = Rotate.split(" ");
+    gridSize = server.fild.size;
 
-        for (var i = 0; i < gridItems.length; i++) {
-        y = i % gridSize;
-        x = Math.floor(i / gridSize);
-            var currentStyle = gridItems[i].getAttribute("style") || "";
-
-            for(var k=0; k<usersX.length; k++) {
-                if(usersX[k] != "" && usersY[k] != "" && x == usersX[k] && y == usersY[k]) {
-                    var image = new Image();
-                    image.src = usersPng[k];
-                    image.style.transform = "rotate("+ rotate[k] +"deg)";
-                    image.style.width =  "100%";
-                    image.style.height = "100%";
-                    if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(image);
-                    break;
-                }
-                else {
-                      var fild = new Image();
-                      fild.src = "/img/fild.png";
-                      fild.style.width =  "100%";
-                      fild.style.height = "100%";
-                      if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(fild);
-                }
+       for (var i = 0; i < gridSize*gridSize; i++) {
+           y = i % gridSize;
+           x = Math.floor(i / gridSize);
+           if(x == server.cheese.x && y == server.cheese.y) {
+                var image = new Image();
+                image.className = 'cheese-img';
+                image.src = server.cheese.path;
+                gridItems[i].appendChild(image);
+                break;
             }
-      }
+     }
 }
 
 function ListenServer(greeting) {
-    UsersX = JSON.parse(greeting.body).UsersXCoord;
-    UsersY = JSON.parse(greeting.body).UsersYCoord;
-    Rotate = JSON.parse(greeting.body).Rotate;
-    png = JSON.parse(greeting.body).UsersPng;
-    CheeseX = JSON.parse(greeting.body).CheeseX;
-    CheeseY = JSON.parse(greeting.body).CheeseY;
-    CheesePng = JSON.parse(greeting.body).CheesePng;
-    PathX = JSON.parse(greeting.body).pathX;
-    PathY = JSON.parse(greeting.body).pathY;
-
+    server = JSON.parse(greeting.body);
     RenderUsers();
-    RenderCheese();
-    ChangeFild();
-    if(JSON.parse(greeting.body).reboot == 1) location.reload();
+}
+
+function RenderUsers() {
+    var gridItems = document.querySelectorAll('.grid-item');
+    var gridSize = server.fild.size;
+    const userCount = Object.keys(server.users).length;
+    
+    gridItems.forEach(item => {
+        var userImages = item.querySelectorAll('.user-img');
+        userImages.forEach(img => item.removeChild(img));
+    });
+
+    for (var i = 0; i < gridItems.length; i++) {
+        y = i % gridSize;
+        x = Math.floor(i / gridSize);
+        for (var k = 0; k < userCount; k++) {
+            var users = Object.values(server.users);
+            if (x == users[k].x && y == users[k].y) {
+                var image = new Image();
+                image.src = users[k].png;
+                image.className = 'user-img';
+                image.style.transform = "rotate(" + users[k].rotate + "deg)";
+                gridItems[i].appendChild(image);
+                break;
+            }
+        }
+    }
 }
 
 function Reboot() {
-    Send(0,0,1);
-}
-
-
-function addActiveClass() {
-    var element = document.querySelector('.nav-link.active');
-    if (element) {
-        element.classList.remove('active');
-    }
-    var rebootElement = document.querySelector('.nav-link');
-    rebootElement.classList.add('active');
-    rebootElement.classList.remove('link-dark');
-}
-
-function removeActiveClass() {
-    var rebootElement = document.querySelector('.nav-link.active');
-    rebootElement.classList.remove('active');
-    rebootElement.classList.add('link-dark');
-}
-
-stompClient.onConnect = (frame) => {
-    setConnected(true);
-    console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/greetings', (greeting) => {
-            ListenServer(greeting);
+    stompClient.publish({
+        destination: "/app/reboot",
+        body: JSON.stringify({'cookie' : document.cookie})
     });
-    Send(0,0,0);
-};
+    event.preventDefault();
+}
 
-stompClient.onWebSocketError = (error) => {
-    console.error('Error with websocket', error);
-};
-
-stompClient.onStompError = (frame) => {
-    console.error('Broker reported error: ' + frame.headers['message']);
-    console.error('Additional details: ' + frame.body);
-};
+function SetSize(val) {
+    stompClient.publish({
+            destination: "/app/setSize",
+            body: JSON.stringify({'sizeMap': val, 'cookie' :  document.cookie})
+    });
+}
 
 document.addEventListener('keydown', function(event) {
     var dirX = 0;
@@ -182,61 +140,74 @@ document.addEventListener('keydown', function(event) {
     else if(event.key == "ArrowLeft")  dirY = -1;
     else if(event.key == "ArrowRight") dirY = 1;
     else return;
-    Send(dirX, dirY, 0);
+
+    stompClient.publish({
+           destination: "/app/move",
+           body: JSON.stringify({'x': dirX, 'y': dirY, 'cookie' : document.cookie})
+    });
 });
 
-function Send(x, y, reb) {
- stompClient.publish({
-        destination: "/app/hello",
-        body: JSON.stringify({'x': x, 'y': y, 'reboot': reb, 'cookieValue' : uuid})
-    });
- }
+// function addActiveClass() {
+//     var element = document.querySelector('.nav-link.active');
+//     if (element) {
+//         element.classList.remove('active');
+//     }
+//     var rebootElement = document.querySelector('.nav-link');
+//     rebootElement.classList.add('active');
+//     rebootElement.classList.remove('link-dark');
+// }
 
-function SetCookies(){
- document.cookie = encodeURIComponent("player") + '=' + encodeURIComponent(uuid);
-}
-
-function Help() {
-    stompClient.publish({
-            destination: "/app/hello",
-            body: JSON.stringify({'x': x, 'y': y, 'auto': 1, 'cookieValue' : uuid})
-    });
-}
-
-function ChangeFild() {
-    gridItems = document.querySelectorAll('.grid-item');
-    var pathX = PathX.split(" ");
-    var pathY = PathY.split(" ");
-    for (var i = 0; i < gridItems.length; i++) {
-        y = i % gridSize;
-        x = Math.floor(i / gridSize);
-
-        for(var k=0; k<pathX.length; k++) {
-            if(pathX[k] == x && pathY[k] == y && pathX[k]!="" && pathY[k] != "") {
-                var fild = new Image();
-                fild.src = "/img/СheeseСrumbles.png";
-                fild.style.width  = "100%";
-                fild.style.height = "100%";
-                if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(fild);
-                console.log(x + " " + y + " " + pathX[k] + " " + pathY[k]);
-             }
-        }
-    }
-}
-
-function Download(){
-    stompClient.publish({
-            destination: "/app/files",
-            body: JSON.stringify({'Download': 1})
-    });
-}
+// function removeActiveClass() {
+//     var rebootElement = document.querySelector('.nav-link.active');
+//     rebootElement.classList.remove('active');
+//     rebootElement.classList.add('link-dark');
+// }
 
 
-function SetSize(val){
-  console.log("Size:", val);
-    stompClient.publish({
-            destination: "/app/fild",
-            body: JSON.stringify({'sizeMap': val})
-    });
-    Reboot();
-}
+// stompClient.onWebSocketError = (error) => {
+//     console.error('Error with websocket', error);
+// };
+
+// stompClient.onStompError = (frame) => {
+//     console.error('Broker reported error: ' + frame.headers['message']);
+//     console.error('Additional details: ' + frame.body);
+// };
+
+
+
+// function Help() {
+//     stompClient.publish({
+//             destination: "/app/hello",
+//             body: JSON.stringify({'x': x, 'y': y, 'auto': 1, 'cookieValue' : uuid})
+//     });
+// }
+
+// function ChangeFild() {
+//     gridItems = document.querySelectorAll('.grid-item');
+//     var pathX = PathX.split(" ");
+//     var pathY = PathY.split(" ");
+//     for (var i = 0; i < gridItems.length; i++) {
+//         y = i % gridSize;
+//         x = Math.floor(i / gridSize);
+
+//         for(var k=0; k<pathX.length; k++) {
+//             if(pathX[k] == x && pathY[k] == y && pathX[k]!="" && pathY[k] != "") {
+//                 var fild = new Image();
+//                 fild.src = "/img/СheeseСrumbles.png";
+//                 fild.style.width  = "100%";
+//                 fild.style.height = "100%";
+//                 if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(fild);
+//                 console.log(x + " " + y + " " + pathX[k] + " " + pathY[k]);
+//              }
+//         }
+//     }
+// }
+
+// function Download(){
+//     stompClient.publish({
+//             destination: "/app/files",
+//             body: JSON.stringify({'Download': 1})
+//     });
+// }
+
+
