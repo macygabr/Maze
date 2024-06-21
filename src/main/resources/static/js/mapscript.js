@@ -1,40 +1,5 @@
-server = JSON.parse(server);
-console.log(server)
-const stompClient = new StompJs.Client({
-    brokerURL: `ws://${server.ip}:${server.port}/gs-guide-websocket`
-});
-
-stompClient.onConnect = (frame) => {
-    setConnected(true);
-    stompClient.subscribe('/topic/greetings', (greeting) => {
-        ListenServer(greeting);
-    });
-    stompClient.subscribe('/topic/reboot', async (greeting) => {
-        server = JSON.parse(greeting.body);
-        location.reload();
-    });
-};
-
-function setConnected(connected) {
-    $("#connect").prop("disabled", connected);
-    $("#disconnect").prop("disabled", !connected);
-    if (connected) {
-        $("#conversation").show();
-    }
-    else {
-        $("#conversation").hide();
-    }
-    $("#greetings").html("");
-}
-
-function SetCookies() {
-    document.cookie = encodeURIComponent(server.user.cookieName) + '=' + encodeURIComponent(server.user.cookieValue);
-}
-
 function connect() {
-    stompClient.activate();
     RenderFild();
-    SetCookies();
 }
 
 
@@ -71,7 +36,6 @@ function RenderFild() {
 function RenderCheese(){
     gridItems = document.querySelectorAll('.grid-item');
     gridSize = server.fild.size;
-
        for (var i = 0; i < gridSize*gridSize; i++) {
            y = i % gridSize;
            x = Math.floor(i / gridSize);
@@ -105,7 +69,7 @@ function RenderUsers() {
         x = Math.floor(i / gridSize);
         for (var k = 0; k < userCount; k++) {
             var users = Object.values(server.users);
-            if (x == users[k].x && y == users[k].y) {
+            if (users[k].authentication && x == users[k].x && y == users[k].y) {
                 var image = new Image();
                 image.src = users[k].png;
                 image.className = 'user-img';
@@ -172,8 +136,6 @@ document.addEventListener('keydown', function(event) {
 //     console.error('Broker reported error: ' + frame.headers['message']);
 //     console.error('Additional details: ' + frame.body);
 // };
-
-
 
 // function Help() {
 //     stompClient.publish({

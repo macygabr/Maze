@@ -6,9 +6,12 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.example.server.database.Database;
 import org.example.server.model.Cheese;
 import org.example.server.model.Fild;
+import org.example.server.model.Greeting;
 import org.example.server.model.User;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,7 +26,8 @@ public class Server {
     private User user;
     private Cheese cheese;
     private Fild fild;
-    private static Map<String,User> users;
+    private Map<String,User> users;
+    private final Database database;
     
     @Value("${server.ip}")
     private String ip;
@@ -33,22 +37,22 @@ public class Server {
     private int countPlayers;
 
     @Autowired
-    public Server(Fild fild) {
+    public Server(Fild fild, Database database) {
+        this.database = database;
         this.user = null;
         this.fild = fild;
         this.cheese = new Cheese(fild.getSize());
         users = new HashMap<>();
     }
 
-    public void Reboot() {
-        users.clear();
-        fild = new Fild(fild.getSize());
-        user = new User(fild);
-        cheese = new Cheese(fild.getSize());
-    }
+    public void Reboot(String cookie) {
+        if(!users.containsKey(cookie) || !users.get(cookie).getAuthentication()) return;
 
-    public Map<String,User> getUsers() {
-        return users;
+        fild = new Fild(fild.getSize());
+        cheese = new Cheese(fild.getSize());
+
+        for(User us : users.values())
+            if(us.getAuthentication()) us.rebootLocation(fild);
     }
 
     public Boolean CheckCookies(HttpServletRequest request) {
@@ -56,17 +60,26 @@ public class Server {
 
         if(cookies != null)
             for(Cookie cookie : cookies)
-                if(users.containsKey(cookie.getName()+"="+cookie.getValue()))
+                if(users.containsKey(cookie.getName()+"="+cookie.getValue())){
+                    user = users.get(cookie.getName()+"="+cookie.getValue());
                     return true;
+                }
 
-        user = new User(fild);
-        if(users.size() < countPlayers) {
-            user.setAuthentication(true);
-            users.put(user.getCookieName()+"="+user.getCookieValue(), user);
-        }
+        user = new User();
+        user.setIp(request.getRemoteAddr());
+        users.put(user.getCookieName()+"="+user.getCookieValue(), user);
         return false;
     }
 
+
+    public Boolean checkUser(User obj) {
+        if(!database.check(obj)) return false;
+        return true;
+    }
+
+    public void insertUser(User obj) throws Exception {
+        database.addUser(obj);
+    }
     // private void SetPathCost(){
     //     for(Cell cell : fild.getResult())
     //         cell.setPathCost(0);

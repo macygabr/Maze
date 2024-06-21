@@ -2,7 +2,7 @@
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
 <head th:include="blocks/head"></head>
-<header th:insert="blocks/header"></header>
+<script th:src="@{/js/login.js}"></script>
 
 <body class="d-flex align-items-center py-4 bg-body-tertiary">
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
@@ -21,10 +21,9 @@
     </symbol>
 </svg>
 
-
 <main class="form-signin w-100 m-auto" style="text-align: center; max-width: 400px;">
     <form>
-        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <h1 class="h3 mb-3 fw-normal">Please login</h1>
 
         <div class="form-floating">
             <input type="login" class="form-control" id="floatingInput" placeholder="name@example.com">
@@ -41,8 +40,8 @@
                 Remember me
             </label>
         </div>
-        <button class="btn btn-primary w-100 py-2" type="submit" onclick="window.location.href = '/'">Sign in</button>
-        <p class="mt-5 mb-3 text-body-secondary">&copy; 2017–2024</p>
+        <button class="btn btn-primary w-100 py-2" type="button" onclick="login()">login</button>
+        <p class="mt-5 mb-3 text-body-secondary">&copy; 2023-2024</p>
     </form>
 </main>
 </body>

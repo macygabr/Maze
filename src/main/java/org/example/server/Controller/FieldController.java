@@ -7,11 +7,10 @@ import org.example.server.model.Greeting;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.messaging.handler.annotation.SendTo;
 
 
 
@@ -70,7 +69,7 @@ public class FieldController {
         if(server.getUsers().containsKey(cookie) && 
             server.getUsers().get(cookie).getAuthentication()){
                 server.getFild().setSize(obj.getSizeMap());
-                server.Reboot();
+                server.Reboot(cookie);
             }
 
         JSONObject response = new JSONObject(server);
@@ -80,11 +79,7 @@ public class FieldController {
     @MessageMapping("/reboot")
     @SendTo("/topic/reboot")
     public String greeting(Greeting obj) {
-        String cookie = obj.getCookie();
-        if(server.getUsers().containsKey(cookie) && 
-                server.getUsers().get(cookie).getAuthentication())
-                    server.Reboot();
-    
+        server.Reboot(obj.getCookie());
         JSONObject response = new JSONObject(server);
         return response.toString();
     }

@@ -10,3 +10,7 @@
 .navbar-nav .nav-link:active {
     background-color: transparent !important;
 }
+
+.hidden {
+    display: none;
+}

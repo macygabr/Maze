@@ -1,11 +1,8 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<script th:inline="javascript">
-        var server = /*[[${server}]]*/ '{}';
-</script>
-
 <head th:include="blocks/head"></head>
+<script th:src="@{/js/mapscript.js}"></script>
 
 <header th:insert="blocks/header"></header>
 <body onload="connect()">

@@ -23,4 +23,15 @@
     }
 
     updateNavLinks();
+    document.getElementById('user-login').textContent = server.user.login;
   });
+  
+
+  if(server.user.authentication) {
+    document.getElementById('text-end-element').hidden = true;
+    document.getElementById('profile-element').hidden = false;
+  }
+  else {
+    document.getElementById('text-end-element').hidden = false;
+    document.getElementById('profile-element').hidden = true;
+  }
