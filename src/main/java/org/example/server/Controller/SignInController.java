@@ -1,11 +1,8 @@
 package org.example.server.Controller;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
-import org.example.server.model.Greeting;
 import org.example.server.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

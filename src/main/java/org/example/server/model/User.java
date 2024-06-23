@@ -42,6 +42,17 @@ public class User {
         rebootLocation(fild);
     }
     
+    public User Private() {
+        User user = new User();
+        user.setAuthentication(authentication);
+        user.setLogin(login);
+        user.setCookieName(cookieName);
+        user.setCookieValue(cookieValue);
+        user.setPng(png);
+        user.setRotate(rotate);
+        return user;
+    }
+
     final public void rebootLocation(Fild fild) {
         this.fild = fild;
         sizeMap = fild.getSize();

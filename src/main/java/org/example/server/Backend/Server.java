@@ -1,5 +1,6 @@
 package org.example.server.Backend;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,9 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.example.server.database.Database;
 import org.example.server.model.Cheese;
 import org.example.server.model.Fild;
-import org.example.server.model.Greeting;
 import org.example.server.model.User;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,6 +34,8 @@ public class Server {
     private int port;
     @Value("${server.countPlayers}")
     private int countPlayers;
+    @Value("${file.upload.directory}") 
+    private String directory;
 
     @Autowired
     public Server(Fild fild, Database database) {
@@ -43,6 +44,19 @@ public class Server {
         this.fild = fild;
         this.cheese = new Cheese(fild.getSize());
         users = new HashMap<>();
+    }
+
+    public Server Private() {
+        Server server = new Server(fild, database);
+        server.setIp(ip);
+        server.setPort(port);
+        server.setUser(user.Private());
+        // Map<String,User> usersPrivate = new HashMap<>();
+        // for(User us : users.values()) {
+        //     usersPrivate.put("0", us.Private());
+        // }
+        server.setUsers(users);
+        return server;
     }
 
     public void Reboot(String cookie) {
@@ -64,13 +78,27 @@ public class Server {
                     user = users.get(cookie.getName()+"="+cookie.getValue());
                     return true;
                 }
-
         user = new User();
         user.setIp(request.getRemoteAddr());
         users.put(user.getCookieName()+"="+user.getCookieValue(), user);
         return false;
     }
 
+    public void saveMap(){
+        try {
+            fild.saveMap(directory);
+        } catch (Exception e){
+            System.err.println(e);
+        }
+    }
+
+    public void loadMap(Path filePath) {
+        try {
+            fild.loadMap(filePath);
+        } catch (Exception e){
+            System.err.println(e);
+        }
+    }
 
     public Boolean checkUser(User obj) {
         if(!database.check(obj)) return false;
@@ -80,6 +108,7 @@ public class Server {
     public void insertUser(User obj) throws Exception {
         database.addUser(obj);
     }
+
     // private void SetPathCost(){
     //     for(Cell cell : fild.getResult())
     //         cell.setPathCost(0);

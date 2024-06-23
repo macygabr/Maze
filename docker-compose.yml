@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_DB: database_server
+      POSTGRES_USER: macygabr
+      POSTGRES_PASSWORD: macygabr
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  server:
+    build: .
+    container_name: server
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/database_server
+      DB_USER: macygabr
+      DB_PASSWORD: macygabr
+      DB_DRIVER_NAME: org.postgresql.Driver
+    depends_on:
+      - postgres
+    ports:
+      - "332:332"
+    # volumes:
+    #   - ./src/main/resources/static/download/:/download/
+
+volumes:
+  postgres_data:

@@ -24,6 +24,23 @@
 
     updateNavLinks();
     document.getElementById('user-login').textContent = server.user.login;
+
+
+    // var rebootElement = document.getElementById("reboot-li");
+    // var helpElement = document.getElementById("help-li");
+    // var uploadElement = document.getElementById("upload-li");
+    // var saveElement = document.getElementById("save-li");
+    // if (currentUrl.includes("/field")) {
+    //     rebootElement.style.display = "list-item";
+    //     helpElement.style.display = "list-item";
+    //     saveElement.style.display = "save-item";
+    //     uploadElement.style.display = "list-item";
+    //   } else {
+    //     rebootElement.style.display = "none";
+    //     helpElement.style.display = "none";
+    //     saveElement.style.display = "none";
+    //     uploadElement.style.display = "none";
+    // }
   });
   
 

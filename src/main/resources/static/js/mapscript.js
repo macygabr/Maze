@@ -89,6 +89,23 @@ function Reboot() {
     event.preventDefault();
 }
 
+function saveMap() {
+    stompClient.publish({
+        destination: "/app/saveMap",
+        body: JSON.stringify({'cookie' : document.cookie})
+    });
+    event.preventDefault();
+}
+
+function loadMap() {
+    stompClient.publish({
+        destination: "/app/loadMap",
+        body: JSON.stringify({'cookie' : document.cookie})
+    });
+    event.preventDefault();
+}
+
+
 function SetSize(val) {
     stompClient.publish({
             destination: "/app/setSize",

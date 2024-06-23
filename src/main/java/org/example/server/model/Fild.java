@@ -1,8 +1,16 @@
 package org.example.server.model;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.nio.file.Path;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +32,6 @@ public class Fild {
         result = new ArrayList<>();
         FillMap();
         Generate();
-        // System.out.println(id);
     }
     
     public Fild(int size) {
@@ -148,6 +155,70 @@ public class Fild {
                 res.add(result.get(sets + size));
 
         return res;
+    }
+
+    public void saveMap(String directory) throws Exception {
+        String fileName = id + "_" + "map.txt";
+        Path filePath = Paths.get(directory, fileName);
+        
+        File file = new File(filePath.toString());
+        if (!file.exists())
+            file.createNewFile();
+
+        StringBuilder mapData = new StringBuilder();
+        mapData.append(size).append(' ').append(size).append('\n');
+
+        for(int i =0; i<size*size; i++) {
+            mapData.append(result.get(i).getRight()).append(' ');
+            if ((i + 1) % size == 0)  mapData.append('\n');
+        }
+        mapData.append('\n');
+        for(int i =0; i<size*size; i++) {
+            mapData.append(result.get(i).getDown()).append(' ');
+            if ((i + 1) % size == 0)  mapData.append('\n');
+        }
+
+        Files.write(filePath, mapData.toString().getBytes(), StandardOpenOption.WRITE);
+    }
+
+    public void loadMap(Path filePath) throws Exception {
+        File file = new File(filePath.toString());
+        
+        if (!file.exists()) {
+            throw new IOException("File not found: " + filePath.toString());
+        }
+
+        List<String> lines = Files.readAllLines(filePath);
+        if (lines.size() < 2) {
+            throw new IOException("File format is incorrect");
+        }
+
+        String[] sizeParts = lines.get(0).split(" ");
+        if (sizeParts.length != 2) {
+            throw new IOException("File format is incorrect");
+        }
+
+        size = Integer.parseInt(sizeParts[0]);
+
+        int index = 1;
+        for (int i = 0; i < size; i++) {
+            String[] rightParts = lines.get(index).split(" ");
+            for (int k=0; k<size; k++) {
+                result.get(i*(k+1) + k).setRight(Integer.parseInt(rightParts[k]));
+            }
+            index++;
+        }
+
+        index++;
+
+        for (int i = 0; i < size; i++) {
+            String[] downParts = lines.get(index).split(" ");
+            for (int k=0; k<size; k++) {
+                result.get(i*(k+1) + k).setDown(Integer.parseInt(downParts[k]));
+            }
+            index++;
+        }
+        Print();
     }
 
     public void Print() {

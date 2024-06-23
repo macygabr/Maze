@@ -1,15 +1,14 @@
 package org.example.server.database;
 
-import org.example.server.model.Greeting;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.example.server.model.User;
-
 import java.util.ArrayList;
 
 import javax.sql.DataSource;
+
+import org.example.server.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 @Component
 public class Database {
@@ -24,15 +23,18 @@ public class Database {
         try {
             String sql = "SELECT * FROM users WHERE login = ?";
             String login = obj.getLogin();
+            String pass = obj.getPass();
             ArrayList<User> users = new ArrayList<>();
             jdbcTemplate.query(sql, new Object[] {login}, (rs, rowNum) -> {
             User user = new User();
             user.setLogin(rs.getString("login"));
+            user.setPass(rs.getString("pass"));
             users.add(user);
             return users;
         });
 
-        if (users.isEmpty()) return false;
+        if (users.isEmpty() || obj.getLogin().equals("") || obj.getPass().equals("")) return false;
+        if(!pass.equals(users.get(0).getPass())) return false;
 
         } catch (Exception e) {
             e.printStackTrace();

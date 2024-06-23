@@ -12,4 +12,7 @@ public class Greeting {
     private int sizeMap;
     private int x;
     private int y;
+    private String file;
+    private String fileName;
+    private String fileType;
 }

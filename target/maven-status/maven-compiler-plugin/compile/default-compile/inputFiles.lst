@@ -8,11 +8,11 @@
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/HomeController.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/config/WebSocketConfig.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/LoginController.java
+/home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/ReturnFilesController.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Backend/Server.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/FileUploadController.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/UserController.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/model/Greeting.java
-/home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/Otvali.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/config/ServerConfig.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/model/HelloMessage.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/database/Database.java
