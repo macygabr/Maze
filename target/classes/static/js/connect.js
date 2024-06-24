@@ -17,8 +17,8 @@ stompClient.onConnect = (frame) => {
         server = JSON.parse(greeting.body);
         console.log(server);
         if(server.user.authentication) window.location.href = '/field'
-        document.cookie = encodeURIComponent(server.user.cookieName) + '=' + encodeURIComponent(server.user.cookieValue);
     });
+    // document.cookie = encodeURIComponent(server.user.cookieName) + '=' + encodeURIComponent(server.user.cookieValue);
     stompClient.subscribe('/topic/loadMap', (greeting) => {
         server = JSON.parse(greeting.body);
         if(server.user.authentication) window.location.href = '/upload'
