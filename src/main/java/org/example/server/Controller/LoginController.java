@@ -1,16 +1,14 @@
 package org.example.server.Controller;
 
+import java.security.Principal;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.example.server.Backend.Server;
 import org.example.server.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,22 +28,21 @@ public class LoginController {
     }
 
     @RequestMapping("/login")
-    public String getPage(HttpServletRequest request, Model model){
+    public String getPage(HttpServletRequest request, Model model) {
         server.CheckCookies(request);
         model.addAttribute("server", new JSONObject(server).toString());
         return "pages/login";
     }
 
-    @SendTo("/topic/authentication")
     @MessageMapping("/authentication")
-    public String authentication(User user, @Header("simpSessionId") String sessionId) {
+    public void authentication(User user, Principal principal) {
         String cookie = user.getCookie();
 
-        if(server.checkUser(user)) {
-            System.out.println(cookie);
-            for(Map.Entry<String, User> it : server.getUsers().entrySet()) {
-                if(it.getValue().getLogin()!=null && it.getValue().getLogin().equals(user.getLogin()))
+        if (server.checkUser(user)) {
+            for (Map.Entry<String, User> it : server.getUsers().entrySet()) {
+                if (it.getValue().getLogin() != null && it.getValue().getLogin().equals(user.getLogin())) {
                     cookie = it.getValue().getCookie();
+                }
             }
 
             user.setCookie(cookie);
@@ -53,9 +50,10 @@ public class LoginController {
             user.rebootLocation(server.getFild());
             server.setUser(user);
             server.getUsers().put(cookie, user);
-            // messagingTemplate.convertAndSendToUser(sessionId, "/queue/reply", new JSONObject(user).toString());
-        }
 
-        return (new JSONObject(server)).toString();
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/reply", new JSONObject(server).toString());
+        } else {
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/reply", "Authentication failed");
+        }
     }
 }
