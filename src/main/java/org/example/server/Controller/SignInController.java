@@ -39,7 +39,7 @@ public class SignInController {
             User us = server.getUsers().get(cookie);
             us.setLogin(user.getLogin());
             us.setPass(user.getPass());
-            us.rebootLocation(server.getFild());
+            us.rebootLocation(server.getField());
             us.setAuthentication(true);
             server.setUser(us);
             server.insertUser(us);

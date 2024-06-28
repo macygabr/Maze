@@ -13,7 +13,7 @@ import lombok.Setter;
 @Component
 @Scope("prototype")
 public class User {
-    private Fild fild;
+    private Field field;
     
     private int x;
     private int y;
@@ -34,12 +34,12 @@ public class User {
         authentication = false;
     }
     
-    public User(Fild fild) {
+    public User(Field field) {
         this();
-        this.fild = fild;
-        sizeMap = fild.getSize();
+        this.field = field;
+        sizeMap = field.getSize();
         authentication = false;
-        rebootLocation(fild);
+        rebootLocation(field);
     }
     
     public User Private() {
@@ -53,9 +53,9 @@ public class User {
         return user;
     }
 
-    final public void rebootLocation(Fild fild) {
-        this.fild = fild;
-        sizeMap = fild.getSize();
+    final public void rebootLocation(Field field) {
+        this.field = field;
+        sizeMap = field.getSize();
         x = (int) (Math.random() * (sizeMap));
         y = (int) (Math.random() * (sizeMap));    
         int[] angles = {0, 90, 180, 270};
@@ -64,7 +64,7 @@ public class User {
     }
 
     // public void copy(User user) {
-    //     this.fild = user.getFild();
+    //     this.field = user.getField();
     //     this.x = user.getX();
     //     this.y = user.getY();
     //     this.authentication = user.getAuthentication();
@@ -79,16 +79,16 @@ public class User {
     
 
     public void move(int divX, int divY) {
-        int size = fild.getSize();
+        int size = field.getSize();
         int index = y + x * size;
         if((x + divX < 0)
                 || (x + divX >= size)
                 || (y + divY) < 0
                 || (y+ divY ) >= size
-                || (fild.getResult().get(index).getDown() == 1 && divX == 1) //низ
-                || (fild.getResult().get(index).getRight() == 1 && divY == 1) //право
-                || (index>=size && divX == -1 && fild.getResult().get(index-size).getDown() == 1)  //верх
-                || (index>=1 && divY == -1 && fild.getResult().get(index-1).getRight() == 1) //лево
+                || (field.getResult().get(index).getDown() == 1 && divX == 1) //низ
+                || (field.getResult().get(index).getRight() == 1 && divY == 1) //право
+                || (index>=size && divX == -1 && field.getResult().get(index-size).getDown() == 1)  //верх
+                || (index>=1 && divY == -1 && field.getResult().get(index-1).getRight() == 1) //лево
         ) return;
 
         if(divY == -1) setRotate(90);

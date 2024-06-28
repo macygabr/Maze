@@ -50,7 +50,7 @@
     <script>
         const value = document.querySelector("#value");
         const input = document.querySelector("#pi_input");
-        input.value = server.fild.size;
+        input.value = server.field.size;
         value.textContent = input.value;
         input.addEventListener("change", (event) => {
             value.textContent = Math.round(event.target.value);

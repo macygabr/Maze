@@ -36,7 +36,7 @@ public class FieldController {
         String cookie = obj.getCookie();
         if(server.getUsers().containsKey(cookie) && 
             server.getUsers().get(cookie).getAuthentication()){
-                server.getFild().setSize(obj.getSizeMap());
+                server.getField().setSize(obj.getSizeMap());
                 server.Reboot(cookie);
             }
 

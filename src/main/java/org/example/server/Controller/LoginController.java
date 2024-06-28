@@ -2,12 +2,13 @@ package org.example.server.Controller;
 
 import java.security.Principal;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.example.server.Backend.Server;
 import org.example.server.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -47,11 +48,11 @@ public class LoginController {
 
             user.setCookie(cookie);
             user.setAuthentication(true);
-            user.rebootLocation(server.getFild());
+            user.rebootLocation(server.getField());
             server.setUser(user);
             server.getUsers().put(cookie, user);
 
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/reply", new JSONObject(server).toString());
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/reply", new JSONObject(user).toString());
         } else {
             messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/reply", "Authentication failed");
         }

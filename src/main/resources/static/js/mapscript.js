@@ -1,32 +1,32 @@
 function connect() {
-    RenderFild();
+    RenderField();
 }
 
 
-function RenderFild() {
+function RenderField() {
     var gridContainer = document.querySelector('.grid-container');
     if (!gridContainer) {
         console.error("Element with class 'grid-container' not found.");
         return;
     }
     gridContainer.innerHTML = '';
-    var size = server.fild.size
-    var arr = server.fild.result
+    var size = server.field.size
+    var arr = server.field.result
     for (var i = 0; i < size*size; i++) {
         var div = document.createElement('div');
         div.className = 'grid-item';
         div.style.width = 100.0/size + "%";
         div.style.height = 100.0/size + "%";
 
-        var fildimg = new Image();
-        fildimg.className = 'img';
+        var fieldimg = new Image();
+        fieldimg.className = 'img';
 
-        if(server.fild.result[i].right == 1 && server.fild.result[i].down == 1) fildimg.src = "/img/fild/fildBoth.png";
-        else if(server.fild.result[i].right == 1) fildimg.src = "/img/fild/fildRight.png";
-        else if(server.fild.result[i].down == 1) fildimg.src = "/img/fild/fildDown.png";
-        else fildimg.src = "/img/fild/fildEmpty.png";
+        if(server.field.result[i].right == 1 && server.field.result[i].down == 1) fieldimg.src = "/img/field/fieldBoth.png";
+        else if(server.field.result[i].right == 1) fieldimg.src = "/img/field/fieldRight.png";
+        else if(server.field.result[i].down == 1) fieldimg.src = "/img/field/fieldDown.png";
+        else fieldimg.src = "/img/field/fieldEmpty.png";
 
-        div.appendChild(fildimg);
+        div.appendChild(fieldimg);
         gridContainer.appendChild(div);
     }
     RenderUsers();
@@ -35,7 +35,7 @@ function RenderFild() {
 
 function RenderCheese(){
     gridItems = document.querySelectorAll('.grid-item');
-    gridSize = server.fild.size;
+    gridSize = server.field.size;
        for (var i = 0; i < gridSize*gridSize; i++) {
            y = i % gridSize;
            x = Math.floor(i / gridSize);
@@ -56,7 +56,7 @@ function ListenServer(greeting) {
 
 function RenderUsers() {
     var gridItems = document.querySelectorAll('.grid-item');
-    var gridSize = server.fild.size;
+    var gridSize = server.field.size;
     const userCount = Object.keys(server.users).length;
     
     gridItems.forEach(item => {
@@ -161,7 +161,7 @@ document.addEventListener('keydown', function(event) {
 //     });
 // }
 
-// function ChangeFild() {
+// function ChangeField() {
 //     gridItems = document.querySelectorAll('.grid-item');
 //     var pathX = PathX.split(" ");
 //     var pathY = PathY.split(" ");
@@ -171,11 +171,11 @@ document.addEventListener('keydown', function(event) {
 
 //         for(var k=0; k<pathX.length; k++) {
 //             if(pathX[k] == x && pathY[k] == y && pathX[k]!="" && pathY[k] != "") {
-//                 var fild = new Image();
-//                 fild.src = "/img/СheeseСrumbles.png";
-//                 fild.style.width  = "100%";
-//                 fild.style.height = "100%";
-//                 if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(fild);
+//                 var field = new Image();
+//                 field.src = "/img/СheeseСrumbles.png";
+//                 field.style.width  = "100%";
+//                 field.style.height = "100%";
+//                 if (gridItems[i].children.length > 0) gridItems[i].children[0].replaceWith(field);
 //                 console.log(x + " " + y + " " + pathX[k] + " " + pathY[k]);
 //              }
 //         }

@@ -1,9 +1,7 @@
+import org.example.server.model.Cheese;
+import org.example.server.model.Field;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import org.example.server.model.Cheese;
-import org.example.server.model.Fild;
-import org.example.server.model.User;
 
 @Configuration
 public class ServerConfig {
@@ -14,7 +12,7 @@ public class ServerConfig {
     }
 
     @Bean
-    public Fild fild() {
-        return new Fild();
+    public Field field() {
+        return new Field();
     }
 }
