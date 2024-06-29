@@ -2,54 +2,65 @@ package org.example.server.model;
 
 import java.util.UUID;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+@Builder
 @Getter
 @Setter
 @Component
 @Scope("prototype")
 public class User {
     private Field field;
-    
     private int x;
     private int y;
-    private Boolean authentication;
+    @Builder.Default private Boolean authentication = false;
     private String login;
     private String pass;
     private String png;
-    private int reboot;
     private int sizeMap;
     private int rotate;
-    private String cookieName;
-    private String cookieValue;
     private String ip;
+    private String cookie;
 
-    public User() {
-        cookieValue = UUID.randomUUID().toString();
-        cookieName = "player";
-        authentication = false;
-    }
+    // public User() {}
+
+    // public User(Field field) {
+    //     this.field = field;
+    //     sizeMap = field.getSize();
+    //     rebootLocation(field);
+    // }
     
-    public User(Field field) {
-        this();
-        this.field = field;
-        sizeMap = field.getSize();
-        authentication = false;
-        rebootLocation(field);
-    }
-    
+    // public User(HttpServletRequest request) {
+    //     setCookie(request);
+    //     ip = request.getRemoteAddr();
+    // }
+
+
     public User Private() {
-        User user = new User();
-        user.setAuthentication(authentication);
-        user.setLogin(login);
-        user.setCookieName(cookieName);
-        user.setCookieValue(cookieValue);
-        user.setPng(png);
-        user.setRotate(rotate);
+        User user = User.builder()
+                        .authentication(authentication)
+                        .x(x)
+                        .y(y)
+                        .png(png)
+                        .rotate(rotate)
+                        .cookie(cookie)
+                        .build();
+        return user;
+    }
+
+    public User GetProfile(){
+        User user = User.builder()
+                    .authentication(authentication)
+                    .login(login)
+                    .build();
         return user;
     }
 
@@ -62,20 +73,6 @@ public class User {
         rotate = angles[(int) (Math.random() * angles.length)];
         png = "/img/mouse/classic" + (int) (Math.random() * 4) + ".png";
     }
-
-    // public void copy(User user) {
-    //     this.field = user.getField();
-    //     this.x = user.getX();
-    //     this.y = user.getY();
-    //     this.authentication = user.getAuthentication();
-    //     this.name = user.getName();
-    //     this.png = user.getPng();
-    //     this.reboot = user.getReboot();
-    //     this.sizeMap = user.getSizeMap();
-    //     this.rotate = user.getRotate();
-    //     this.cookieName = user.getCookieName();
-    //     this.cookieValue = user.getCookieValue();
-    // }
     
 
     public void move(int divX, int divY) {
@@ -99,29 +96,24 @@ public class User {
         y += divY;
     }
 
-    public void setCookie(String cookie){
-        String[] res = cookie.split("=");
-        if (res.length == 2) {
-            cookieName = res[0];
-            cookieValue = res[1];
-        } else {
-            System.err.println("Invalid cookie format: " + cookie);
-        }
-    }
-
-    public String getCookie(){
-        return cookieName+"="+cookieValue;
+    public void setCookie(String cookie) {
+        
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "x=" + x +
-                ", y=" + y  +
+                "field=" + field +
+                ", x=" + x +
+                ", y=" + y +
+                ", authentication=" + authentication +
                 ", login='" + login + '\'' +
+                ", pass='" + pass + '\'' +
                 ", png='" + png + '\'' +
-                ", cookieValue=" + cookieValue +
-                ", reboot=" + reboot +
+                ", sizeMap=" + sizeMap +
+                ", rotate=" + rotate +
+                ", ip='" + ip + '\'' +
+                ", cookie='" + cookie + '\'' +
                 '}';
     }
-}
+}   

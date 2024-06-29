@@ -26,8 +26,8 @@ public class FileController {
 
     @GetMapping("/files")
     public String files(HttpServletRequest request, Model model) {
-        server.CheckCookies(request);
         try {
+            server.CheckAndAddUser(request);
             File folder = new File(uploadDirectory);
             File[] files = folder.listFiles();
             String[] name = new String[files.length];

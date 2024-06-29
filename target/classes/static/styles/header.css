@@ -1,0 +1,16 @@
+.header-style {
+    padding-left: 5% !important;
+    padding-right: 5% !important;
+}
+
+.nav-link:hover {
+    color:  black !important;
+}
+
+.navbar-nav .nav-link:active {
+    background-color: transparent !important;
+}
+
+.hidden {
+    display: none;
+}

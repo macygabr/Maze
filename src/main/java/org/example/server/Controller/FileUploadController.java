@@ -33,8 +33,12 @@ public class FileUploadController {
 
     @RequestMapping("/upload")
     public String uploadForm(HttpServletRequest request, Model model) {
-        server.CheckCookies(request);
-        model.addAttribute("server", new JSONObject(server).toString());
+        try {
+            server.CheckAndAddUser(request);
+            model.addAttribute("server", new JSONObject(server).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return "pages/upload";
     }
 

@@ -1,5 +1,7 @@
 package org.example.server.Controller;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
@@ -21,8 +23,12 @@ public class HomeController {
     
     @RequestMapping("/")
     public String home(HttpServletRequest request, Model model) {
-        server.CheckCookies(request);
-        model.addAttribute("server", new JSONObject(server).toString());
+        try {
+            server.CheckAndAddUser(request);
+            model.addAttribute("server", new JSONObject(server).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return "pages/home";
     }
 }

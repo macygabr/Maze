@@ -1,5 +1,6 @@
 package org.example.server.Backend;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +41,8 @@ public class Server {
     @Autowired
     public Server(Field field, Database database) {
         this.database = database;
-        this.user = null;
         this.field = field;
+        this.user = User.builder().field(field).sizeMap(field.getSize()).build();
         this.cheese = new Cheese(field.getSize());
         users = new HashMap<>();
     }
@@ -50,12 +51,14 @@ public class Server {
         Server server = new Server(field, database);
         server.setIp(ip);
         server.setPort(port);
-        server.setUser(user.Private());
-        // Map<String,User> usersPrivate = new HashMap<>();
-        // for(User us : users.values()) {
-        //     usersPrivate.put("0", us.Private());
-        // }
-        server.setUsers(users);
+        server.setUser(user.GetProfile());
+        // System.out.println(user);
+
+        Map<String,User> usersPrivate = new HashMap<>();
+        for(User us : users.values()) {
+            usersPrivate.put("user", us.Private());
+        }
+        server.setUsers(usersPrivate);
         return server;
     }
 
@@ -69,19 +72,28 @@ public class Server {
             if(us.getAuthentication()) us.rebootLocation(field);
     }
 
-    public Boolean CheckCookies(HttpServletRequest request) {
+    public Boolean CheckAndAddUser(HttpServletRequest request) throws IOException {
         Cookie[] cookies = request.getCookies();
+        if(cookies == null || cookies.length == 0) return false;
 
-        if(cookies != null)
-            for(Cookie cookie : cookies)
-                if(users.containsKey(cookie.getName()+"="+cookie.getValue())){
-                    user = users.get(cookie.getName()+"="+cookie.getValue());
-                    return true;
-                }
-        user = new User();
-        user.setIp(request.getRemoteAddr());
-        users.put(user.getCookieName()+"="+user.getCookieValue(), user);
-        return false;
+        for(Cookie cookie : cookies){
+            if(users.containsKey(cookie.getName()+cookie.getValue())) {
+                user = users.get(cookie.getName()+cookie.getValue());
+                return true;
+            }
+        }
+
+        for(Cookie cookie : cookies) {
+            if(cookie.getName().equals("maze")) {
+                user.setField(field);
+                user.setIp(request.getRemoteAddr());
+                user.setCookie(user.getCookie());
+                user.rebootLocation(field);
+                users.put(user.getCookie(), user);
+                return false;
+            }
+        }
+        throw new IOException("Cookie not found");
     }
 
     public void saveMap(){
@@ -100,7 +112,7 @@ public class Server {
         }
     }
 
-    public Boolean checkUser(User obj) {
+    public Boolean checkUserDB(User obj) {
         return database.check(obj);
     }
 

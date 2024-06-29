@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="blocks/head"></head>
+<header th:insert="blocks/header"></header>
+
+<div style="display: flex; padding-left: 10%;">
+    <body>
+        <ul>
+            <li th:each="file : ${files}">
+                <a th:href="'/' + 'files/' + ${file}" th:text="${file}"></a>
+            </li>
+        </ul>
+    </body>
+</div>
+
+<div th:insert="blocks/footer"></div>
+</html>

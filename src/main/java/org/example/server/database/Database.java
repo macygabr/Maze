@@ -26,9 +26,10 @@ public class Database {
             String pass = obj.getPass();
             ArrayList<User> users = new ArrayList<>();
             jdbcTemplate.query(sql, new Object[] {login}, (rs, rowNum) -> {
-            User user = new User();
-            user.setLogin(rs.getString("login"));
-            user.setPass(rs.getString("pass"));
+            User user = User.builder()
+                            .login(rs.getString("login"))
+                            .pass(rs.getString("pass"))
+                            .build();
             users.add(user);
             return users;
         });

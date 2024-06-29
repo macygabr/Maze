@@ -1,5 +1,7 @@
 package org.example.server.Controller;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
@@ -23,8 +25,12 @@ public class SignInController {
 
     @RequestMapping("/sign")
     public String getPageSign(HttpServletRequest request, Model model) {
-        server.CheckCookies(request);
-        model.addAttribute("server", new JSONObject(server).toString());
+        try {
+            server.CheckAndAddUser(request);
+            model.addAttribute("server", new JSONObject(server).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return "pages/sign";
     }
 
@@ -32,8 +38,8 @@ public class SignInController {
     @MessageMapping("/sign")
     public String sign(User user) {
         
-        if(server.checkUser(user)) return (new JSONObject(server)).toString();
-        String cookie = user.getCookie();
+        if(server.checkUserDB(user)) return (new JSONObject(server)).toString();
+        String cookie =user.getCookie();
         
         try {
             User us = server.getUsers().get(cookie);

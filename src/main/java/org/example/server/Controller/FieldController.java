@@ -1,5 +1,6 @@
 package org.example.server.Controller;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
@@ -11,6 +12,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.example.server.model.User;
 
 
 @Controller
@@ -25,7 +27,11 @@ public class FieldController {
     
     @RequestMapping("/field")
     public String field(HttpServletRequest request, Model model) {
-        server.CheckCookies(request);
+        try {
+            server.CheckAndAddUser(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         model.addAttribute("server", new JSONObject(server.Private()).toString());
         return "pages/field";
     }
@@ -40,14 +46,14 @@ public class FieldController {
                 server.Reboot(cookie);
             }
 
-        return (new JSONObject(server)).toString();
+        return (new JSONObject(server.Private())).toString();
     }
 
     @MessageMapping("/reboot")
     @SendTo("/topic/reboot")
     public String greeting(Greeting obj) {
         server.Reboot(obj.getCookie());
-        return (new JSONObject(server)).toString();
+        return (new JSONObject(server.Private())).toString();
     }
 
     @SendTo("/topic/loadMap")
@@ -71,7 +77,7 @@ public class FieldController {
                 server.getUsers().get(cookie).getAuthentication())
                     server.getUsers().get(cookie).move(obj.getX(),obj.getY());
     
-        return (new JSONObject(server)).toString();
+        return (new JSONObject(server.Private())).toString();
     }
 
     @SendTo("/topic/greetings")
@@ -82,6 +88,6 @@ public class FieldController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return (new JSONObject(server)).toString();
+        return (new JSONObject(server.Private())).toString();
     }
 }
