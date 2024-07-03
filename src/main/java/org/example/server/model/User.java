@@ -1,10 +1,5 @@
 package org.example.server.model;
 
-import java.util.UUID;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -25,24 +20,9 @@ public class User {
     private String login;
     private String pass;
     private String png;
-    private int sizeMap;
     private int rotate;
     private String ip;
     private String cookie;
-
-    // public User() {}
-
-    // public User(Field field) {
-    //     this.field = field;
-    //     sizeMap = field.getSize();
-    //     rebootLocation(field);
-    // }
-    
-    // public User(HttpServletRequest request) {
-    //     setCookie(request);
-    //     ip = request.getRemoteAddr();
-    // }
-
 
     public User Private() {
         User user = User.builder()
@@ -51,22 +31,21 @@ public class User {
                         .y(y)
                         .png(png)
                         .rotate(rotate)
-                        .cookie(cookie)
                         .build();
         return user;
     }
 
     public User GetProfile(){
         User user = User.builder()
-                    .authentication(authentication)
-                    .login(login)
-                    .build();
+                        .authentication(authentication)
+                        .login(login)
+                        .build();
         return user;
     }
 
     final public void rebootLocation(Field field) {
         this.field = field;
-        sizeMap = field.getSize();
+        int sizeMap = field.getSize();
         x = (int) (Math.random() * (sizeMap));
         y = (int) (Math.random() * (sizeMap));    
         int[] angles = {0, 90, 180, 270};
@@ -110,7 +89,6 @@ public class User {
                 ", login='" + login + '\'' +
                 ", pass='" + pass + '\'' +
                 ", png='" + png + '\'' +
-                ", sizeMap=" + sizeMap +
                 ", rotate=" + rotate +
                 ", ip='" + ip + '\'' +
                 ", cookie='" + cookie + '\'' +

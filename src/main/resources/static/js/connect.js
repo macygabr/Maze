@@ -1,26 +1,65 @@
 server = JSON.parse(server);
-setCookie("maze", 1); 
+setCookie("maze", 1);
 
-console.log(server);
-const stompClient = new StompJs.Client({
-    brokerURL: `ws://${server.ip}:${server.port}/gs-guide-websocket`
+stompClient = new StompJs.Client({
+    brokerURL: `ws://${server.ip}:${server.port}/gs-websocket`
 });
+
+// function connectToServer() {
+//     stompClient.connect({}, function (frame) {
+//         console.log('Connected: ' + frame);
+
+//         stompClient.subscribe('/topic/reboot', (greeting) => {
+//             try {
+//                 let serverData = JSON.parse(greeting.body);
+//                 console.log("Message: ", serverData);
+//                 console.log("Message Size: ", serverData.field.sizve);
+//             } catch (e) {
+//                 console.error("Error parsing message: ", e);
+//             }
+//         });
+
+//     }, function (error) {
+//         console.error('Connection error: ', error);
+//         setTimeout(connect, 1000);
+//     });
+// }
+
+// connectToServer();
+
+stompClient.onclose = function() {
+    console.error("WebSocket connection closed");
+};
+
+stompClient.onopen = function() {
+    console.log("WebSocket connection opened");
+};
+
+stompClient.onerror = function(error) {
+    console.error("WebSocket error: ", error);
+};
 
 stompClient.onConnect = (frame) => {
     setConnected(true);
-    console.log("Connect: " + frame);
+    console.log("Connected: " + frame);
 
     stompClient.subscribe('/topic/greetings', (greeting) => {
         ListenServer(greeting);
     });
+    
     stompClient.subscribe('/topic/reboot', async (greeting) => {
         server = JSON.parse(greeting.body);
+        console.log("Message: " + server.field.size);
+        // RenderField();
         location.reload();
     });
-    stompClient.subscribe('/topic/authentication', async (greeting) => {
+    
+    stompClient.subscribe('/topic/findPath', async (greeting) => {
         server = JSON.parse(greeting.body);
-        if(server.user.authentication) window.location.href = '/field'
+        RenderPath();
+        RenderCheese();
     });
+
     stompClient.subscribe('/topic/loadMap', (greeting) => {
         server = JSON.parse(greeting.body);
         if(server.user.authentication) window.location.href = '/upload'
@@ -40,9 +79,9 @@ function setConnected(connected) {
     $("#greetings").html("");
 }
 
+
 function setCookie(name, days) {
     if (document.cookie.split(';').some((item) => item.trim().startsWith(name + '='))) {
-        console.log("Cookie already exists");
         return;
     }
 

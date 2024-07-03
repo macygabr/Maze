@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: macygabr
       POSTGRES_PASSWORD: macygabr
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -24,7 +24,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "332:332"
+      - "333:332"
     # volumes:
     #   - ./src/main/resources/static/download/:/download/
 

@@ -3,12 +3,12 @@ package org.example.server.model;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.nio.file.Path;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -19,11 +19,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Component
-@Scope("prototype")
+@Scope("singleton")
 public class Field {
     private UUID id;
     private int size;
     private ArrayList<Cell> result;
+    private int sets;
 
     public Field() {
         this.size = 10;
@@ -43,13 +44,14 @@ public class Field {
 
     private void Generate() {
         for (int i = 0; i < size; i++) {
-            
-            GenerateVerticalWall(i);
-            AddDownWall(i);
-            if (i < size - 1) GenerateHorizontalWall(i);
-            // Print();
-            if (i == size - 1) GenerateLastLine();
-            // Print();
+            if (i < size - 1) {
+                Print();
+                GenerateVerticalWall(i);
+                AddDownWall(i);
+                GenerateHorizontalWall(i);
+            } else {
+                GenerateLastLine(i);
+            }
         }
         DeleteWall();
     }
@@ -60,6 +62,10 @@ public class Field {
 
     private void GenerateVerticalWall(int j) {
         for (int i = j * size; i < j * size + size; i++) {
+            result.get(i).setSets(sets++);
+        }
+        
+        for (int i = j * size; i < j * size + size; i++) {
             if (Math.random() < 0.5) ChangeSets(i);
             else result.get(i).setRight(1);
         }
@@ -69,9 +75,9 @@ public class Field {
         for (int i = j * size; i < j * size + size && i < result.size(); i++) {
             if (Math.random() < 0.5) {
                 int count = 0;
-                int sets = result.get(i).getSets();
+                int curentSets = result.get(i).getSets();
                 for (int k = j * size; k < j * size + size && k < result.size(); k++)
-                    if (result.get(k).getDown() == 0 && sets == result.get(k).getSets()) count++;
+                    if (result.get(k).getDown() == 0 && curentSets == result.get(k).getSets()) count++;
                 if (count > 1) result.get(i).setDown(1);
             }
         }
@@ -92,20 +98,25 @@ public class Field {
         //new Sets
         for (int i = (j + 1) * size; i < (j + 1) * size + size && j + 1 < result.size(); i++)
             if (result.get(i).getDown() == 1)
-                result.get(i).setSets(new Cell().getSets());
+                result.get(i).setSets(0);
 
         //del down wall
         for (int i = (j + 1) * size; i < (j + 1) * size + size && j + 1 < result.size(); i++)
             result.get(i).setDown(0);
     }
 
-    private void GenerateLastLine() {
-        for (int i = size * (size - 1); i < size * size && i + 1 < result.size(); i++) {
+    private void GenerateLastLine(int j) {
+        for (int i = j * size; i < j * size + size; i++) {
+             result.get(i).setRight(1);
+             if(result.get(i).getSets() == 0) result.get(i).setSets(sets++);
+        }
+
+        for (int i = j * size ; i < j * size + size && i + 1 < result.size(); i++) {
+            // Print();
             if (result.get(i).getSets() != result.get(i + 1).getSets()) {
                 result.get(i).setRight(0);
-            } else {
-                result.get(i+1).setSets(result.get(i).getSets());
             }
+            ChangeSets(i);
         }
     }
 
@@ -180,7 +191,7 @@ public class Field {
         Files.write(filePath, mapData.toString().getBytes(), StandardOpenOption.WRITE);
     }
 
-    public void loadMap(Path filePath) throws Exception {
+    public void loadMap(Path filePath) throws IOException {
         File file = new File(filePath.toString());
         
         if (!file.exists()) {
@@ -198,37 +209,52 @@ public class Field {
         }
 
         size = Integer.parseInt(sizeParts[0]);
+        FillMap();
+        // Print();
 
         int index = 1;
         for (int i = 0; i < size; i++) {
             String[] rightParts = lines.get(index).split(" ");
             for (int k=0; k<size; k++) {
                 result.get(i*(k+1) + k).setRight(Integer.parseInt(rightParts[k]));
+                System.out.print(rightParts[k] + " ");
             }
+            System.out.println();
             index++;
         }
-
+        System.out.println();
         index++;
 
         for (int i = 0; i < size; i++) {
             String[] downParts = lines.get(index).split(" ");
             for (int k=0; k<size; k++) {
                 result.get(i*(k+1) + k).setDown(Integer.parseInt(downParts[k]));
+                System.out.print(downParts[k] + " ");
             }
+            System.out.println();
             index++;
         }
-        Print();
+        // Print();
+        // DeleteWall();
     }
 
     public void Print() {
-        String color;
+        String add, rightWall, DownWall;
          for (int k = 0; k<result.size(); k++) {
-             if(result.get(k).getRight() == 1 && result.get(k).getDown() == 1) color = "\033[33m"; //yellow 
-             else if(result.get(k).getRight() == 1) color = "\033[31m"; //red  
-             else if(result.get(k).getDown() == 1) color = "\033[32m"; //green 
-             else color = "";
-             System.out.print(color + result.get(k).getSets() + "\033[0m" + " ");
-             if((k+1)%(size) == 0) System.out.println();
+            //  if(result.get(k).getRight() == 1 && result.get(k).getDown() == 1) color = "\033[33m"; //yellow 
+            //  else if(result.get(k).getRight() == 1) color = "\033[31m"; //red  
+            //  else if(result.get(k).getDown() == 1) color = "\033[32m"; //green 
+            //  else color = "";
+            if(result.get(k).getSets() < 10) add = " ";
+            else add = "";
+            
+            if(result.get(k).getRight() == 1) rightWall= "|";
+            else rightWall = " ";
+            if(result.get(k).getDown() == 1) DownWall=   "_";
+            else DownWall = " ";
+            System.out.print(result.get(k).getSets() + add + " ");
+            
+            if((k+1)%(size) == 0) System.out.println();
          }
          System.out.println();
     }

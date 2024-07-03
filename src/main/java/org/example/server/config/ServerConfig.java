@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServerConfig {
 
-    @Bean
-    public Cheese cheese() {
-        return new Cheese(10); 
-    }
+    // @Bean
+    // public Cheese cheese() {
+    //     return new Cheese(); 
+    // }
 
     @Bean
     public Field field() {

@@ -12,11 +12,31 @@ import lombok.Setter;
 public class Cheese {
     private int x;
     private int y;
-    private String path;
+    private final String path;
 
-    public Cheese(int sizeMap) {
+    public Cheese(User user) {
+        int sizeMap = user.getField().getSize();
+        path = "/img/cheese.png";
         x = (int) (Math.random() * (sizeMap));
         y = (int) (Math.random() * (sizeMap));
-        path = "/img/cheese.png";
+
+        while(x == user.getX() && y == user.getY()) {
+            x = (int) (Math.random() * (sizeMap));
+            y = (int) (Math.random() * (sizeMap));
+        }
+    }
+    
+    // public Cheese(int sizeMap) {
+    //     path = "/img/cheese.png";
+    //     x = (int) (Math.random() * (sizeMap));
+    //     y = (int) (Math.random() * (sizeMap));
+    // }
+
+    public void reboot(User user) {
+        int sizeMap = user.getField().getSize();
+        while(x == user.getX() && y == user.getY()){
+            x = (int) (Math.random() * (sizeMap));
+            y = (int) (Math.random() * (sizeMap));
+        }
     }
 }

@@ -11,15 +11,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import lombok.AllArgsConstructor;
+
 @Controller
+@AllArgsConstructor
 public class HomeController {
 
-    private final Server server;
-    
     @Autowired
-    public HomeController(Server server) {
-        this.server = server;
-    }
+    private final Server server;
     
     @RequestMapping("/")
     public String home(HttpServletRequest request, Model model) {

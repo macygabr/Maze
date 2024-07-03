@@ -4,6 +4,7 @@ function connect() {
 
 
 function RenderField() {
+    console.log(server);
     var gridContainer = document.querySelector('.grid-container');
     if (!gridContainer) {
         console.error("Element with class 'grid-container' not found.");
@@ -29,13 +30,38 @@ function RenderField() {
         div.appendChild(fieldimg);
         gridContainer.appendChild(div);
     }
+    // RenderPath();
     RenderUsers();
     RenderCheese();
+}
+
+function RenderPath() {
+    gridItems = document.querySelectorAll('.grid-item');
+    gridSize = server.field.size;
+    
+    gridItems.forEach(item => {
+        const cheeseImages = item.querySelectorAll('.cheese-img');
+        cheeseImages.forEach(image => image.remove());
+    });
+    
+       for (var i = 0; i < gridSize*gridSize; i++) {
+           if(server.field.result[i].path) {
+                var image = new Image();
+                image.className = 'cheese-img';
+                image.src = "/img/field/path.png";
+                gridItems[i].appendChild(image);
+            }
+     }
 }
 
 function RenderCheese(){
     gridItems = document.querySelectorAll('.grid-item');
     gridSize = server.field.size;
+    
+    gridItems.forEach(item => {
+        const cheeseImages = item.querySelectorAll('.cheese-img');
+        cheeseImages.forEach(image => image.remove());
+    });
        for (var i = 0; i < gridSize*gridSize; i++) {
            y = i % gridSize;
            x = Math.floor(i / gridSize);
@@ -49,10 +75,6 @@ function RenderCheese(){
      }
 }
 
-function ListenServer(greeting) {
-    server = JSON.parse(greeting.body);
-    RenderUsers();
-}
 
 function RenderUsers() {
     var gridItems = document.querySelectorAll('.grid-item');
@@ -81,6 +103,12 @@ function RenderUsers() {
     }
 }
 
+function ListenServer(greeting) {
+    server = JSON.parse(greeting.body);
+    RenderCheese();
+    RenderUsers();
+}
+
 function Reboot() {
     stompClient.publish({
         destination: "/app/reboot",
@@ -107,11 +135,20 @@ function loadMap() {
 
 
 function SetSize(val) {
-    stompClient.publish({
+    if (stompClient && stompClient.connected) {
+        stompClient.publish({
             destination: "/app/setSize",
-            body: JSON.stringify({'sizeMap': val, 'cookie' :  document.cookie})
-    });
+            body: JSON.stringify({'sizeMap': val, 'cookie': document.cookie})
+        });
+    } else {
+        console.error('No STOMP connection established.');
+        if (!stompClient.active) {
+            stompClient.activate();
+            SetSize(val);
+        }
+    }
 }
+
 
 document.addEventListener('keydown', function(event) {
     var dirX = 0;
@@ -121,12 +158,19 @@ document.addEventListener('keydown', function(event) {
     else if(event.key == "ArrowLeft")  dirY = -1;
     else if(event.key == "ArrowRight") dirY = 1;
     else return;
-
+    
     stompClient.publish({
-           destination: "/app/move",
-           body: JSON.stringify({'x': dirX, 'y': dirY, 'cookie' : document.cookie})
+        destination: "/app/move",
+        body: JSON.stringify({'x': dirX, 'y': dirY, 'cookie' : document.cookie})
     });
 });
+
+function Help() {
+    stompClient.publish({
+            destination: "/app/findPath",
+            body: JSON.stringify({'cookie' : document.cookie})
+    });
+}
 
 // function addActiveClass() {
 //     var element = document.querySelector('.nav-link.active');
@@ -154,12 +198,7 @@ document.addEventListener('keydown', function(event) {
 //     console.error('Additional details: ' + frame.body);
 // };
 
-// function Help() {
-//     stompClient.publish({
-//             destination: "/app/hello",
-//             body: JSON.stringify({'x': x, 'y': y, 'auto': 1, 'cookieValue' : uuid})
-//     });
-// }
+
 
 // function ChangeField() {
 //     gridItems = document.querySelectorAll('.grid-item');

@@ -1,6 +1,5 @@
 package org.example.server.Controller;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
@@ -12,7 +11,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.example.server.model.User;
 
 
 @Controller
@@ -40,14 +38,17 @@ public class FieldController {
     @SendTo("/topic/reboot")
     public String set(Greeting obj) {
         String cookie = obj.getCookie();
-        if(server.getUsers().containsKey(cookie) && 
-            server.getUsers().get(cookie).getAuthentication()){
+
+        if(server.getUsers().containsKey(cookie) && server.getUsers().get(cookie).getAuthentication()) {
                 server.getField().setSize(obj.getSizeMap());
                 server.Reboot(cookie);
-            }
-
+        } else {
+            System.out.println("Invalid user or authentication for cookie: " + cookie);
+        }
+    
         return (new JSONObject(server.Private())).toString();
     }
+    
 
     @MessageMapping("/reboot")
     @SendTo("/topic/reboot")
@@ -75,8 +76,8 @@ public class FieldController {
 
         if(server.getUsers().containsKey(cookie) && 
                 server.getUsers().get(cookie).getAuthentication())
-                    server.getUsers().get(cookie).move(obj.getX(),obj.getY());
-    
+                    server.moveUser(obj);
+
         return (new JSONObject(server.Private())).toString();
     }
 
@@ -85,6 +86,18 @@ public class FieldController {
     public String save(Greeting obj) {
         try {
             server.saveMap();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new JSONObject(server.Private())).toString();
+    }
+
+    @SendTo("/topic/findPath")
+    @MessageMapping("/findPath")
+    public String findPath(Greeting obj) {
+        try {
+            String cookie = obj.getCookie();
+            server.FindPath(cookie);
         } catch (Exception e) {
             e.printStackTrace();
         }

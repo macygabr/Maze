@@ -1,23 +1,21 @@
 package org.example.server.Controller;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.example.server.Backend.Server;
-import org.example.server.model.Greeting;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Controller
 public class FileUploadController {
@@ -53,7 +51,7 @@ public class FileUploadController {
             model.addAttribute("status", true);
         } catch (IOException e) {
             model.addAttribute("status", false);
-            e.getMessage();
+            e.printStackTrace();
         } finally {
             model.addAttribute("server", new JSONObject(server).toString());
         }

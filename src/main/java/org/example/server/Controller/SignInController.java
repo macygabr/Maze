@@ -38,22 +38,22 @@ public class SignInController {
     @MessageMapping("/sign")
     public String sign(User user) {
         
-        if(server.checkUserDB(user)) return (new JSONObject(server)).toString();
-        String cookie =user.getCookie();
+        // if(server.checkUserDB(user)) return (new JSONObject(server)).toString();
+        // String cookie =user.getCookie();
         
-        try {
-            User us = server.getUsers().get(cookie);
-            us.setLogin(user.getLogin());
-            us.setPass(user.getPass());
-            us.rebootLocation(server.getField());
-            us.setAuthentication(true);
-            server.setUser(us);
-            server.insertUser(us);
-        } catch (Exception e) {
-            e.printStackTrace();
-            server.getUsers().get(cookie).setAuthentication(false);
-            return (new JSONObject(server)).toString();
-        }
+        // try {
+        //     User us = server.getUsers().get(cookie);
+        //     us.setLogin(user.getLogin());
+        //     us.setPass(user.getPass());
+        //     us.rebootLocation(server.getField());
+        //     us.setAuthentication(true);
+        //     server.setUser(us);
+        //     server.insertUser(us);
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        //     server.getUsers().get(cookie).setAuthentication(false);
+        //     return (new JSONObject(server)).toString();
+        // }
         return (new JSONObject(server)).toString();
     }
 }
