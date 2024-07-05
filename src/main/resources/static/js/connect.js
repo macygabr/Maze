@@ -49,7 +49,6 @@ stompClient.onConnect = (frame) => {
     
     stompClient.subscribe('/topic/reboot', async (greeting) => {
         server = JSON.parse(greeting.body);
-        console.log("Message: " + server.field.size);
         // RenderField();
         location.reload();
     });
@@ -60,9 +59,14 @@ stompClient.onConnect = (frame) => {
         // RenderCheese();
     });
 
+    // stompClient.subscribe('/topic/authentication', async (greeting) => {
+    //     server = JSON.parse(greeting.body);
+    //     if(server.user.authentication == "USER") window.location.href = '/field'
+    // });
+
     stompClient.subscribe('/topic/loadMap', (greeting) => {
         server = JSON.parse(greeting.body);
-        if(server.user.authentication) window.location.href = '/upload'
+        if(server.user.authentication == "USER") window.location.href = '/upload'
     });
 };
 

@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 import org.example.server.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +20,7 @@ public class Database {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public Boolean check(User obj) {
-        try {
+    public Boolean check(User obj) throws DataAccessException {
             String sql = "SELECT * FROM users WHERE login = ?";
             String login = obj.getLogin();
             String pass = obj.getPass();
@@ -29,6 +29,7 @@ public class Database {
             User user = User.builder()
                             .login(rs.getString("login"))
                             .pass(rs.getString("pass"))
+                            .ip(obj.getIp())
                             .build();
             users.add(user);
             return users;
@@ -36,20 +37,26 @@ public class Database {
 
         if (users.isEmpty() || obj.getLogin().equals("") || obj.getPass().equals("")) return false;
         if(!pass.equals(users.get(0).getPass())) return false;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        System.err.println(obj);
+        String updateSql = "UPDATE users SET ip = ? WHERE login = ?";
+        jdbcTemplate.update(updateSql, obj.getIp(), login);
         return true;
     }
 
-    final public void addUser(User obj) throws Exception {
+    
+    public void addUser(User obj) throws DataAccessException {
             String login = obj.getLogin();
             String ip = obj.getIp();
             String pass = obj.getPass();
-            String sql = "INSERT INTO users (login,pass,ip) " +
-                         "VALUES (?,?,?)";
-            jdbcTemplate.update(sql,login,pass,ip);
+            String status = obj.getAuthentication().toString();
+            String sql = "INSERT INTO users (status,login,pass,ip) " +
+                         "VALUES (?,?,?,?)";
+            jdbcTemplate.update(sql,status,login,pass,ip);
+    }
+
+    public void remove(User obj) throws DataAccessException {
+            String login = obj.getLogin();
+            String sql = "DELETE FROM users WHERE login = ?";
+            jdbcTemplate.update(sql, login);
     }
 }

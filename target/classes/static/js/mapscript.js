@@ -91,13 +91,12 @@ function RenderUsers() {
         x = Math.floor(i / gridSize);
         for (var k = 0; k < userCount; k++) {
             var users = Object.values(server.users);
-            if (users[k].authentication && x == users[k].x && y == users[k].y) {
+            if (users[k].authentication == "USER" && x == users[k].x && y == users[k].y) {
                 var image = new Image();
                 image.src = users[k].png;
                 image.className = 'user-img';
                 image.style.transform = "rotate(" + users[k].rotate + "deg)";
                 gridItems[i].appendChild(image);
-                break;
             }
         }
     }
@@ -169,6 +168,13 @@ document.addEventListener('keydown', function(event) {
 function Help() {
     stompClient.publish({
             destination: "/app/findPath",
+            body: JSON.stringify({'cookie' : document.cookie})
+    });
+}
+
+function logout() {
+    stompClient.publish({
+            destination: "/app/disconnect",
             body: JSON.stringify({'cookie' : document.cookie})
     });
 }

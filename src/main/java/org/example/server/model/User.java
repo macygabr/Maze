@@ -16,19 +16,21 @@ public class User {
     private Field field;
     private int x;
     private int y;
-    @Builder.Default private Boolean authentication = false;
+    @Builder.Default private AuthenticationType authentication = AuthenticationType.GUEST;
     private String login;
     private String pass;
     private String png;
     private int rotate;
     private String ip;
     private String cookie;
+    private int bill;
 
     public User Private() {
         User user = User.builder()
                         .authentication(authentication)
                         .x(x)
                         .y(y)
+                        .bill(bill)
                         .png(png)
                         .rotate(rotate)
                         .build();
@@ -50,7 +52,7 @@ public class User {
         y = (int) (Math.random() * (sizeMap));    
         int[] angles = {0, 90, 180, 270};
         rotate = angles[(int) (Math.random() * angles.length)];
-        png = "/img/mouse/classic" + (int) (Math.random() * 4) + ".png";
+        if(png == null) png = "/img/mouse/classic" + (int) (Math.random() * 4) + ".png";
     }
     
 
@@ -73,10 +75,6 @@ public class User {
         if(divX == 1)  setRotate(0);
         x += divX;
         y += divY;
-    }
-
-    public void setCookie(String cookie) {
-        
     }
 
     @Override

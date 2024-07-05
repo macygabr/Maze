@@ -5,13 +5,18 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
+import org.example.server.model.AuthenticationType;
 import org.example.server.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -34,26 +39,66 @@ public class SignInController {
         return "pages/sign";
     }
 
-    @SendTo("/topic/authentication")
-    @MessageMapping("/sign")
-    public String sign(User user) {
+    // @SendTo("/topic/authentication")
+    // @MessageMapping("/sign")
+    // public String sign(User user) {
+    //     System.out.println(user);
+    //     if(server.checkUserDB(user)) return (new JSONObject(server)).toString();
+    //     String cookie =user.getCookie();
+    //     try {
+    //         User us = User.builder()
+    //                       .login(user.getLogin())
+    //                       .pass(user.getPass())
+    //                       .cookie(cookie)
+    //                       .authentication(AuthenticationType.USER)
+    //                       .ip(user.getIp())
+    //                       .build();
+
+    //         us.rebootLocation(server.getField());
+    //         server.setUser(us);
+    //         server.getUsers().put(cookie, us);
+    //         server.insertUser(us);
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //         User us = User.builder()
+    //                       .authentication(AuthenticationType.CHEATER)
+    //                       .ip(user.getIp())
+    //                       .build();
+    //         server.setUser(us);
+    //         server.insertUser(us);
+    //     }
+    //     return (new JSONObject(server)).toString();
+    // }
+    @PostMapping("/sign")
+     public ResponseEntity<String> sign(@RequestBody User user, HttpServletRequest request) throws DataAccessException {
+        // user.setIp(request.getRemoteAddr());
         
-        // if(server.checkUserDB(user)) return (new JSONObject(server)).toString();
+        // System.out.println(user);
+        // if(server.checkUserDB(user)) return ResponseEntity.ok(new JSONObject(server.Private()).toString());
         // String cookie =user.getCookie();
-        
         // try {
-        //     User us = server.getUsers().get(cookie);
-        //     us.setLogin(user.getLogin());
-        //     us.setPass(user.getPass());
+        //     User us = User.builder()
+        //                   .login(user.getLogin())
+        //                   .pass(user.getPass())
+        //                   .cookie(cookie)
+        //                   .authentication(AuthenticationType.USER)
+        //                   .ip(user.getIp())
+        //                   .build();
+
         //     us.rebootLocation(server.getField());
-        //     us.setAuthentication(true);
         //     server.setUser(us);
+        //     server.getUsers().put(cookie, us);
         //     server.insertUser(us);
         // } catch (Exception e) {
         //     e.printStackTrace();
-        //     server.getUsers().get(cookie).setAuthentication(false);
-        //     return (new JSONObject(server)).toString();
+        //     User us = User.builder()
+        //                   .authentication(AuthenticationType.CHEATER)
+        //                   .ip(user.getIp())
+        //                   .build();
+        //     server.setUser(us);
+        //     server.insertUser(us);
         // }
-        return (new JSONObject(server)).toString();
+        
+        return ResponseEntity.ok(new JSONObject(server.Private()).toString());
     }
 }

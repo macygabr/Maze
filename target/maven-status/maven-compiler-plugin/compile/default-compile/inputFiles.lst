@@ -15,6 +15,7 @@
 /home/macygabr/Project/Maze/src/main/java/org/example/server/config/ServerConfig.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/model/Field.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/database/Database.java
+/home/macygabr/Project/Maze/src/main/java/org/example/server/model/AuthenticationType.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Main.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/FileController.java
 /home/macygabr/Project/Maze/src/main/java/org/example/server/Controller/AboutusController.java

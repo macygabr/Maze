@@ -44,7 +44,7 @@
   });
   
 
-  if(server.user.authentication) {
+  if(server.user.authentication == "USER") {
     document.getElementById('text-end-element').hidden = true;
     document.getElementById('profile-element').hidden = false;
   }

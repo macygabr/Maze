@@ -19,7 +19,7 @@ public class ApplicationConfig {
    @Value("${db.driver.name}")
    private String DB_DRIVER_NAME;
    
-   private String sql_create_users_db = "CREATE TABLE IF NOT EXISTS Users (id SERIAL PRIMARY KEY, login VARCHAR(255) UNIQUE, pass VARCHAR(255), ip VARCHAR(255))";
+   private String sql_create_users_db = "CREATE TABLE IF NOT EXISTS Users (id SERIAL PRIMARY KEY, status VARCHAR(255), login VARCHAR(255) UNIQUE, pass VARCHAR(255), ip VARCHAR(255))";
 
 
    @Bean(name = "SpringDataSource")

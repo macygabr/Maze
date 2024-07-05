@@ -5,9 +5,11 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
+import org.example.server.model.AuthenticationType;
 import org.example.server.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,12 +39,14 @@ public class LoginController {
     }
 
     @PostMapping("/authentication")
-    public ResponseEntity<String> authentication(@RequestBody User user) {
-        if (server.checkUserDB(user)) {
-            String cookie = user.getCookie();
-            user.setAuthentication(true);
-            user.rebootLocation(server.getField());
+    public ResponseEntity<String> authentication(@RequestBody User user, HttpServletRequest request) throws DataAccessException {
+        String cookie = user.getCookie();
+        user.setIp(request.getRemoteAddr());
+        
+        if (cookie!=null && !user.getCookie().isEmpty() && server.checkUserDB(user)) {
+            user.setAuthentication(AuthenticationType.USER);
             user.setCookie(cookie);
+            user.rebootLocation(server.getField());
             server.setUser(user);
             server.getUsers().put(cookie, user);
         }

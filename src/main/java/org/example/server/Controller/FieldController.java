@@ -3,7 +3,7 @@ package org.example.server.Controller;
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
-import org.example.server.model.Greeting;
+import org.example.server.model.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -39,7 +39,7 @@ public class FieldController {
     public String set(Greeting obj) {
         String cookie = obj.getCookie();
 
-        if(server.getUsers().containsKey(cookie) && server.getUsers().get(cookie).getAuthentication()) {
+        if(server.getUsers().containsKey(cookie) && server.getUsers().get(cookie).getAuthentication() == AuthenticationType.USER) {
                 server.getField().setSize(obj.getSizeMap());
                 server.Reboot(cookie);
         } else {
@@ -63,7 +63,7 @@ public class FieldController {
         String cookie = obj.getCookie();
 
         if(server.getUsers().containsKey(cookie) && 
-                server.getUsers().get(cookie).getAuthentication())
+                server.getUsers().get(cookie).getAuthentication() == AuthenticationType.USER)
                     return (new JSONObject(server)).toString();
 
         return (new JSONObject()).toString();
@@ -75,7 +75,7 @@ public class FieldController {
         String cookie = obj.getCookie();
 
         if(server.getUsers().containsKey(cookie) && 
-                server.getUsers().get(cookie).getAuthentication())
+                server.getUsers().get(cookie).getAuthentication() == AuthenticationType.USER)
                     server.moveUser(obj);
 
         return (new JSONObject(server.Private())).toString();
@@ -99,6 +99,17 @@ public class FieldController {
             String cookie = obj.getCookie();
             Server ser = server.FindPath(cookie);
             return (new JSONObject(ser.Private())).toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new JSONObject(server.Private())).toString();
+    }
+
+    @SendTo("/topic/reboot")
+    @MessageMapping("/disconnect")
+    public String disconnect(Greeting obj) {
+        try {
+            server.disconnect(obj.getCookie());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,6 +6,7 @@ org/example/server/database/Database.class
 org/example/server/Backend/Server.class
 org/example/server/model/Greeting.class
 WebSocketService.class
+org/example/server/model/AuthenticationType.class
 org/example/server/config/WebSocketConfig.class
 org/example/server/Controller/ReturnFilesController.class
 org/example/server/model/User.class

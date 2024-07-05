@@ -2,6 +2,7 @@ package org.example.server.Backend;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import org.example.server.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
@@ -57,7 +59,7 @@ public class Server {
         server.setCheese(cheese);
         Map<String,User> usersPrivate = new HashMap<>();
         for(User us : users.values()) {
-            usersPrivate.put("user", us.Private());
+            usersPrivate.put(us.getLogin(), us.Private());
         }
         server.setUsers(usersPrivate);
         return server;
@@ -65,21 +67,23 @@ public class Server {
 
     public void moveUser(Greeting obj) {
         String cookie = obj.getCookie();
-        users.get(cookie).move(obj.getX(),obj.getY());
-        if(users.get(cookie).getX() == cheese.getX() && users.get(cookie).getY() == cheese.getY()){
-            cheese.reboot(users.get(cookie));
+        User curentUser = users.get(cookie);
+        curentUser.move(obj.getX(),obj.getY());
+        if(curentUser.getX() == cheese.getX() && curentUser.getY() == cheese.getY()) {
+            curentUser.setBill(curentUser.getBill()+1);
+            cheese.reboot(curentUser);
         }
     }
 
     public void Reboot(String cookie) {
-        if(!users.containsKey(cookie) || !users.get(cookie).getAuthentication()) return;
+        if(!users.containsKey(cookie) || !(users.get(cookie).getAuthentication() == AuthenticationType.USER)) return;
 
         field = new Field(field.getSize());
         users.get(cookie).rebootLocation(field);
         cheese.reboot(users.get(cookie));
 
         for(User us : users.values())
-            if(us.getAuthentication()) us.rebootLocation(field);
+            if(us.getAuthentication() == AuthenticationType.USER) us.rebootLocation(field);
     }
 
     public Boolean CheckAndAddUser(HttpServletRequest request) throws IOException {
@@ -92,14 +96,30 @@ public class Server {
                 return true;
             }
         }
+
+        // for(Cookie cookie :cookies)
+        //     System.err.println("\033[31m" + cookie.getName()+"="+cookie.getValue() + "\033[0m");
         
         for(Cookie cookie : cookies) {
             if(cookie.getName().equals("maze")) {
-                user.setField(field);
-                user.setIp(request.getRemoteAddr());
-                user.setCookie(user.getCookie());
-                user.rebootLocation(field);
-                users.put(user.getCookie(), user);
+                User us = User.builder()
+                                // .field(field)
+                                .authentication(AuthenticationType.GUEST)
+                                // .ip(request.getRemoteAddr())
+                                // .cookie(cookie.getName()+"="+cookie.getValue())
+                                .build();
+
+                // user.setField(field);
+                // user.setAuthentication(false);
+                // user.setIp(request.getRemoteAddr());
+                // user.setCookie(cookie.getName()+"="+cookie.getValue());
+                // user.rebootLocation(field);
+                // us.rebootLocation(field);
+                user = us;
+                // users.put(cookie.getName()+"="+cookie.getValue(), user);
+
+                // for(User usit : users.values())
+                //     System.err.println("\033[31m" + usit + "\033[0m");
                 return false;
             }
         }
@@ -134,7 +154,7 @@ public class Server {
         return database.check(obj);
     }
 
-    public void insertUser(User obj) throws Exception {
+    public void insertUser(User obj) throws DataAccessException {
         database.addUser(obj);
     }
 
@@ -197,6 +217,16 @@ public class Server {
             if(!goal.equals(current)){
                 goal.setPath(true);
             }
+        }
+    }
+
+    public void disconnect(String cookie) throws SQLException {
+        user = User.builder()
+                        .authentication(AuthenticationType.GUEST)
+                        .build();
+
+        if(users.containsKey(cookie)) {
+            users.remove(cookie);
         }
     }
 
