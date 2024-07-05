@@ -116,6 +116,18 @@ public class Server {
 
     public void loadMap(Path filePath) throws IOException {
         field.loadMap(filePath);
+
+        // this.field = field;
+
+        // this.user = User.builder().field(field).build();
+        // this.cheese = new Cheese(user);
+        // users = new HashMap<>();
+
+        for(User us : users.values()) {
+            us.rebootLocation(field);
+        }
+        this.user = User.builder().field(field).build();
+        cheese.reboot(user);
     }
 
     public Boolean checkUserDB(User obj) {
@@ -126,54 +138,56 @@ public class Server {
         database.addUser(obj);
     }
 
-    public void FindPath(String cookie) {
+    public Server FindPath(String cookie) {
+        Field copyfield = field.copy();
+        Server ser = new Server(copyfield, database);
         User us = users.get(cookie);
-        System.out.println(us);
-        SetPathCost();
-        AlgorithmAstar(us);
-        SetPath(us);
+        SetPathCost(ser);
+        AlgorithmAstar(us, ser);
+        SetPath(us, ser);
+        return ser;
     }
 
-    public void SetPathCost(){
-        for(Cell cell : field.getResult()){
+    public void SetPathCost(Server ser) {
+        for(Cell cell : ser.getField().getResult()){
             cell.setPath(false);
             cell.setPathCost(0);
         }
     }
 
-    private void AlgorithmAstar(User us) {
-        Cell start = field.getCell(us.getX(), us.getY());
-        Cell goal =  field.getCell(cheese.getX(), cheese.getY());
+    private void AlgorithmAstar(User us, Server ser) {
+        Cell start = ser.getField().getCell(us.getX(), us.getY());
+        Cell goal =  ser.getField().getCell(cheese.getX(), cheese.getY());
         Set<Cell> openSet = new HashSet<>();
         Set<Cell> closedSet = new HashSet<>();
         // HashMap<Cell, Cell> cameFrom = new HashMap<>();
-
         openSet.add(start);
-
         while (!openSet.isEmpty()) {
             Cell current = null;
-
+            
             for (Cell node : openSet)
-                if (current == null)  current = node;
-
+            if (current == null)  current = node;
             if (current.equals(goal)) return;
-
+            
             openSet.remove(current);
             closedSet.add(current);
-
-            for (Cell neighbor : field.getNeighbors(current)) {
+            
+            for (Cell neighbor : ser.getField().getNeighbors(current)) {
+                // printMap(ser.getField());
                 if (closedSet.contains(neighbor)) continue;
                 if (!openSet.contains(neighbor)) openSet.add(neighbor);
-                neighbor.setPathCost(current.getPathCost()  + 1);
+                neighbor.setPathCost(current.getPathCost() + 1);
             }
         }
+        System.out.println("End");
     }
 
-    private void SetPath(User us) {
-        Cell goal = field.getCell(cheese.getX(), cheese.getY());
-        Cell current = field.getCell(us.getX(), us.getY());
+    private void SetPath(User us, Server ser) {
+        Cell goal = ser.getField().getCell(cheese.getX(), cheese.getY());
+        Cell current = ser.getField().getCell(us.getX(), us.getY());
+              
         while (!current.equals(goal)) {
-            for(Cell neighbor : field.getNeighbors(goal)) {
+            for(Cell neighbor : ser.getField().getNeighbors(goal)) {
                 if(neighbor.getPathCost() == goal.getPathCost() - 1) {
                     goal = neighbor;
                     break;
@@ -186,7 +200,7 @@ public class Server {
         }
     }
 
-    private void printMap(){
+    private void printMap(Field field){
         String color;
         String end = "\033[0m";
         for(int i=0; i<field.getResult().size(); i++) {

@@ -40,14 +40,14 @@ function RenderPath() {
     gridSize = server.field.size;
     
     gridItems.forEach(item => {
-        const cheeseImages = item.querySelectorAll('.cheese-img');
+        const cheeseImages = item.querySelectorAll('.cheesepath-img');
         cheeseImages.forEach(image => image.remove());
     });
     
        for (var i = 0; i < gridSize*gridSize; i++) {
            if(server.field.result[i].path) {
                 var image = new Image();
-                image.className = 'cheese-img';
+                image.className = 'cheesepath-img';
                 image.src = "/img/field/path.png";
                 gridItems[i].appendChild(image);
             }
@@ -107,6 +107,7 @@ function ListenServer(greeting) {
     server = JSON.parse(greeting.body);
     RenderCheese();
     RenderUsers();
+    RenderPath();
 }
 
 function Reboot() {

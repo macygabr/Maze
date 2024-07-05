@@ -97,7 +97,8 @@ public class FieldController {
     public String findPath(Greeting obj) {
         try {
             String cookie = obj.getCookie();
-            server.FindPath(cookie);
+            Server ser = server.FindPath(cookie);
+            return (new JSONObject(ser.Private())).toString();
         } catch (Exception e) {
             e.printStackTrace();
         }

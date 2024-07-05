@@ -3,12 +3,13 @@ package org.example.server.model;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.nio.file.Path;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -19,41 +20,40 @@ import lombok.Setter;
 @Getter
 @Setter
 @Component
-@Scope("singleton")
+@Scope("prototype")
 public class Field {
-    private UUID id;
+    private String id;
     private int size;
     private ArrayList<Cell> result;
-    private int sets;
-
-    public Field() {
-        this.size = 10;
-        id = UUID.randomUUID();
-        result = new ArrayList<>();
-        FillMap();
-        Generate();
-    }
     
     public Field(int size) {
         this.size = size;
-        id = UUID.randomUUID();
+        id = LocalDateTime.now().toString() + "_" + UUID.randomUUID();
         result = new ArrayList<>();
         FillMap();
         Generate();
     }
+
+    public Field() {
+        this(10);
+    }
+    
 
     private void Generate() {
         for (int i = 0; i < size; i++) {
             if (i < size - 1) {
-                Print();
                 GenerateVerticalWall(i);
                 AddDownWall(i);
                 GenerateHorizontalWall(i);
             } else {
-                GenerateLastLine(i);
+                GenerateLastLine();
             }
         }
         DeleteWall();
+        
+        for (int i = 0; i < size*size; i++) {
+            result.get(i).setIndex(i);
+        }
     }
     private void FillMap() {
         for (int i = 0; i < size * size; i++)
@@ -61,10 +61,6 @@ public class Field {
     }
 
     private void GenerateVerticalWall(int j) {
-        for (int i = j * size; i < j * size + size; i++) {
-            result.get(i).setSets(sets++);
-        }
-        
         for (int i = j * size; i < j * size + size; i++) {
             if (Math.random() < 0.5) ChangeSets(i);
             else result.get(i).setRight(1);
@@ -75,9 +71,9 @@ public class Field {
         for (int i = j * size; i < j * size + size && i < result.size(); i++) {
             if (Math.random() < 0.5) {
                 int count = 0;
-                int curentSets = result.get(i).getSets();
+                int sets = result.get(i).getSets();
                 for (int k = j * size; k < j * size + size && k < result.size(); k++)
-                    if (result.get(k).getDown() == 0 && curentSets == result.get(k).getSets()) count++;
+                    if (result.get(k).getDown() == 0 && sets == result.get(k).getSets()) count++;
                 if (count > 1) result.get(i).setDown(1);
             }
         }
@@ -96,23 +92,23 @@ public class Field {
             result.get(i).setRight(0);
 
         //new Sets
-        for (int i = (j + 1) * size; i < (j + 1) * size + size && j + 1 < result.size(); i++)
+        for (int i = (j + 1) * size; i < (j + 1) * size + size && j +1 <= result.size(); i++){
             if (result.get(i).getDown() == 1)
-                result.get(i).setSets(0);
+                result.get(i).setSets(new Cell().getSets());
+        }
 
         //del down wall
         for (int i = (j + 1) * size; i < (j + 1) * size + size && j + 1 < result.size(); i++)
             result.get(i).setDown(0);
     }
 
-    private void GenerateLastLine(int j) {
+    private void GenerateLastLine() {
+        int j = size - 1;
         for (int i = j * size; i < j * size + size; i++) {
-             result.get(i).setRight(1);
-             if(result.get(i).getSets() == 0) result.get(i).setSets(sets++);
+            result.get(i).setRight(1);
         }
-
-        for (int i = j * size ; i < j * size + size && i + 1 < result.size(); i++) {
-            // Print();
+        
+        for (int i = size * (size - 1); i < size * size && i + 1 < result.size(); i++) {
             if (result.get(i).getSets() != result.get(i + 1).getSets()) {
                 result.get(i).setRight(0);
             }
@@ -132,7 +128,6 @@ public class Field {
         }
     }
 
-
     private void DeleteWall() {
         for (int i = 0, k = size - 1; i < result.size(); i++, k += size) {
             if (i >= size * (size - 1)) result.get(i).setDown(0);
@@ -146,23 +141,32 @@ public class Field {
 
     public ArrayList<Cell> getNeighbors(Cell cell) {
         ArrayList<Cell> res = new ArrayList<>();
-        int sets = cell.getSets();
 
-        if (sets - 1 >= 0 && result.get(sets - 1) != null && (sets) % (size) != 0)
-            if (result.get(sets - 1).getRight() == 0)
-                res.add(result.get(sets - 1));
+        int index = cell.getIndex();
 
-        if (sets + 1 < result.size() && result.get(sets + 1) != null && (sets + 1)%(size) != 0)
-            if (result.get(sets).getRight() == 0)
-                res.add(result.get(sets + 1));
+        if (index - 1 >= 0 && (index) % size != 0) {
+            if (result.get(index - 1).getRight() == 0) {
+                res.add(result.get(index - 1));
+            }
+        }
 
-        if (sets - size >= 0 && result.get(sets - size) != null)
-            if (result.get(sets - size).getDown() == 0)
-                res.add(result.get(sets - size));
+        if (index + 1 < result.size() && (index + 1) % size != 0) {
+            if (result.get(index).getRight() == 0) {
+                res.add(result.get(index + 1));
+            }
+        }
 
-        if (sets + size < result.size() && result.get(sets + size) != null)
-            if (result.get(sets).getDown() == 0)
-                res.add(result.get(sets + size));
+        if (index - size >= 0) {
+            if (result.get(index - size).getDown() == 0) {
+                res.add(result.get(index - size));
+            }
+        }
+
+        if (index + size < result.size()) {
+            if (result.get(index).getDown() == 0) {
+                res.add(result.get(index + size));
+            }
+        }
 
         return res;
     }
@@ -209,52 +213,55 @@ public class Field {
         }
 
         size = Integer.parseInt(sizeParts[0]);
-        FillMap();
-        // Print();
+        result.clear();
+        for(int i=0; i<size*size; i++){
+            result.add(new Cell(i));
+        }
 
         int index = 1;
         for (int i = 0; i < size; i++) {
             String[] rightParts = lines.get(index).split(" ");
-            for (int k=0; k<size; k++) {
-                result.get(i*(k+1) + k).setRight(Integer.parseInt(rightParts[k]));
-                System.out.print(rightParts[k] + " ");
+            for (int k = 0; k < size; k++) {
+                result.get(i * size + k).setRight(Integer.parseInt(rightParts[k]));
             }
-            System.out.println();
             index++;
         }
-        System.out.println();
+
         index++;
 
         for (int i = 0; i < size; i++) {
             String[] downParts = lines.get(index).split(" ");
             for (int k=0; k<size; k++) {
-                result.get(i*(k+1) + k).setDown(Integer.parseInt(downParts[k]));
-                System.out.print(downParts[k] + " ");
+                result.get(i * size + k).setDown(Integer.parseInt(downParts[k]));
             }
-            System.out.println();
             index++;
         }
-        // Print();
-        // DeleteWall();
+    }
+
+    public Field copy(){
+        Field copy = new Field();
+        copy.setId(id);
+        copy.setSize(size);
+        ArrayList<Cell> copyCell = new ArrayList<>();
+        for(Cell cell : result){
+            copyCell.add(cell.copy());
+        }
+        copy.setResult(copyCell);
+        return copy;
     }
 
     public void Print() {
-        String add, rightWall, DownWall;
+        String color, add;
          for (int k = 0; k<result.size(); k++) {
-            //  if(result.get(k).getRight() == 1 && result.get(k).getDown() == 1) color = "\033[33m"; //yellow 
-            //  else if(result.get(k).getRight() == 1) color = "\033[31m"; //red  
-            //  else if(result.get(k).getDown() == 1) color = "\033[32m"; //green 
-            //  else color = "";
-            if(result.get(k).getSets() < 10) add = " ";
-            else add = "";
-            
-            if(result.get(k).getRight() == 1) rightWall= "|";
-            else rightWall = " ";
-            if(result.get(k).getDown() == 1) DownWall=   "_";
-            else DownWall = " ";
-            System.out.print(result.get(k).getSets() + add + " ");
-            
-            if((k+1)%(size) == 0) System.out.println();
+             if(result.get(k).getSets() < 10) add = " ";
+             else add = "";
+
+             if(result.get(k).getRight() == 1 && result.get(k).getDown() == 1) color = "\033[33m"; //yellow 
+             else if(result.get(k).getRight() == 1) color = "\033[31m"; //red  
+             else if(result.get(k).getDown() == 1) color = "\033[32m"; //green 
+             else color = "";
+             System.out.print(color + result.get(k).getSets() + "\033[0m" + add + " ");
+             if((k+1)%(size) == 0) System.out.println();
          }
          System.out.println();
     }

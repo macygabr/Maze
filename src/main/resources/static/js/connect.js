@@ -57,7 +57,7 @@ stompClient.onConnect = (frame) => {
     stompClient.subscribe('/topic/findPath', async (greeting) => {
         server = JSON.parse(greeting.body);
         RenderPath();
-        RenderCheese();
+        // RenderCheese();
     });
 
     stompClient.subscribe('/topic/loadMap', (greeting) => {
