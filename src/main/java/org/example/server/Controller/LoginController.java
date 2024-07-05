@@ -41,11 +41,17 @@ public class LoginController {
     @PostMapping("/authentication")
     public ResponseEntity<String> authentication(@RequestBody User user, HttpServletRequest request) throws DataAccessException {
         String cookie = user.getCookie();
+        for(User us : server.getUsers().values()) {
+            if(us.getLogin().equals(user.getLogin()) && us.getPass().equals(user.getPass())) {
+                return ResponseEntity.ok(new JSONObject(server.Private()).toString());
+            }
+        }
+
         user.setIp(request.getRemoteAddr());
+        user.setAuthentication(AuthenticationType.USER);
+        user.setCookie(cookie);
         
         if (cookie!=null && !user.getCookie().isEmpty() && server.checkUserDB(user)) {
-            user.setAuthentication(AuthenticationType.USER);
-            user.setCookie(cookie);
             user.rebootLocation(server.getField());
             server.setUser(user);
             server.getUsers().put(cookie, user);

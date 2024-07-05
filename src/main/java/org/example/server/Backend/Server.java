@@ -75,7 +75,7 @@ public class Server {
         }
     }
 
-    public void Reboot(String cookie) {
+    public void Reboot(String cookie) throws IOException{
         if(!users.containsKey(cookie) || !(users.get(cookie).getAuthentication() == AuthenticationType.USER)) return;
 
         field = new Field(field.getSize());
@@ -158,7 +158,7 @@ public class Server {
         database.addUser(obj);
     }
 
-    public Server FindPath(String cookie) {
+    public Server FindPath(String cookie) throws IOException {
         Field copyfield = field.copy();
         Server ser = new Server(copyfield, database);
         User us = users.get(cookie);
@@ -199,7 +199,6 @@ public class Server {
                 neighbor.setPathCost(current.getPathCost() + 1);
             }
         }
-        System.out.println("End");
     }
 
     private void SetPath(User us, Server ser) {

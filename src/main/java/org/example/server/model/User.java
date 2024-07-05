@@ -31,6 +31,7 @@ public class User {
                         .x(x)
                         .y(y)
                         .bill(bill)
+                        .login(login)
                         .png(png)
                         .rotate(rotate)
                         .build();

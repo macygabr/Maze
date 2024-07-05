@@ -11,8 +11,8 @@ public class ServerConfig {
     //     return new Cheese(); 
     // }
 
-    @Bean
-    public Field field() {
-        return new Field();
-    }
+    // @Bean
+    // public Field field() {
+    //     return new Field();
+    // }
 }

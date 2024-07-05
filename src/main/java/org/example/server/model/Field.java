@@ -26,7 +26,8 @@ public class Field {
     private int size;
     private ArrayList<Cell> result;
     
-    public Field(int size) {
+    public Field(int size) throws IOException {
+        if(size <2 || size>50) throw new IOException("Wrong size");
         this.size = size;
         id = LocalDateTime.now().toString() + "_" + UUID.randomUUID();
         result = new ArrayList<>();
@@ -34,7 +35,7 @@ public class Field {
         Generate();
     }
 
-    public Field() {
+    public Field() throws IOException {
         this(10);
     }
     
@@ -213,6 +214,11 @@ public class Field {
         }
 
         size = Integer.parseInt(sizeParts[0]);
+
+        if (size < 2 || size > 50) {
+            throw new IOException("Wrong size");
+        }
+
         result.clear();
         for(int i=0; i<size*size; i++){
             result.add(new Cell(i));
@@ -238,7 +244,7 @@ public class Field {
         }
     }
 
-    public Field copy(){
+    public Field copy() throws IOException {
         Field copy = new Field();
         copy.setId(id);
         copy.setSize(size);
@@ -264,5 +270,18 @@ public class Field {
              if((k+1)%(size) == 0) System.out.println();
          }
          System.out.println();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Field field = (Field) o;
+        return size == field.size;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

@@ -73,6 +73,15 @@ function RenderCheese(){
                 break;
             }
      }
+
+    const userListElement = document.getElementById('user-list');
+    userListElement.innerHTML = '';
+
+    Object.values(server.users).forEach(us => {
+        const div = document.createElement('div');
+        div.textContent = `${us.login}: ${us.bill}`;
+        userListElement.appendChild(div);
+    });
 }
 
 

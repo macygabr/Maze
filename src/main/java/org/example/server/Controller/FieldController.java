@@ -1,5 +1,7 @@
 package org.example.server.Controller;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.example.server.Backend.Server;
@@ -36,9 +38,10 @@ public class FieldController {
 
     @MessageMapping("/setSize")
     @SendTo("/topic/reboot")
-    public String set(Greeting obj) {
+    public String set(Greeting obj) throws IOException {
         String cookie = obj.getCookie();
-
+        if(obj.getSizeMap()<2 || obj.getSizeMap() > 50) return (new JSONObject(server.Private())).toString();
+        
         if(server.getUsers().containsKey(cookie) && server.getUsers().get(cookie).getAuthentication() == AuthenticationType.USER) {
                 server.getField().setSize(obj.getSizeMap());
                 server.Reboot(cookie);
@@ -53,7 +56,11 @@ public class FieldController {
     @MessageMapping("/reboot")
     @SendTo("/topic/reboot")
     public String greeting(Greeting obj) {
-        server.Reboot(obj.getCookie());
+        try {
+            server.Reboot(obj.getCookie());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return (new JSONObject(server.Private())).toString();
     }
 
